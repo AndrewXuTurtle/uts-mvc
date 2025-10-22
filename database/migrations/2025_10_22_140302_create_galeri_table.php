@@ -11,12 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_kegiatan', function (Blueprint $table) {
+        Schema::create('galeri', function (Blueprint $table) {
             $table->id();
             $table->string('judul');
             $table->text('deskripsi')->nullable();
+            $table->string('foto');
+            $table->enum('kategori', ['akademik', 'kemahasiswaan', 'fasilitas', 'kegiatan', 'prestasi', 'lainnya'])->default('lainnya');
             $table->date('tanggal')->nullable();
-            $table->string('lokasi')->nullable();
+            $table->string('fotografer')->nullable();
+            $table->boolean('tampilkan_di_home')->default(false);
+            $table->integer('urutan')->default(0);
             $table->timestamps();
         });
     }
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_kegiatan');
+        Schema::dropIfExists('galeri');
     }
 };

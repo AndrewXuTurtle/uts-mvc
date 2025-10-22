@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             PengumumanSeeder::class,
             AgendaSeeder::class,
             AlumniSeeder::class,
+            GaleriSeeder::class,
         ]);
     }
 }

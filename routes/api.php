@@ -30,3 +30,7 @@ Route::prefix('prestasi')->group(function () {
 // Alumni API
 Route::apiResource('alumni', App\Http\Controllers\Api\AlumniController::class);
 Route::get('alumni-statistics', [App\Http\Controllers\Api\AlumniController::class, 'statistics']);
+
+// Galeri API
+Route::apiResource('galeri', App\Http\Controllers\Api\GaleriController::class);
+Route::get('galeri-kategori/{kategori}', [App\Http\Controllers\Api\GaleriController::class, 'byKategori']);

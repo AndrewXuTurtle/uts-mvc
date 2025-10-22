@@ -4,23 +4,55 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Galeri extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_galeri';
+    protected $table = 'galeri';
 
     protected $fillable = [
-        'kegiatan_id',
-        'file',
-        'tipe',
-        'keterangan'
+        'judul',
+        'deskripsi',
+        'foto',
+        'kategori',
+        'tanggal',
+        'fotografer',
+        'tampilkan_di_home',
+        'urutan',
     ];
 
-    public function kegiatan(): BelongsTo
+    protected $casts = [
+        'tanggal' => 'date',
+        'tampilkan_di_home' => 'boolean',
+        'urutan' => 'integer',
+    ];
+
+    /**
+     * Scope untuk filter berdasarkan kategori
+     */
+    public function scopeKategori($query, $kategori)
     {
-        return $this->belongsTo(Kegiatan::class, 'kegiatan_id');
+        return $query->where('kategori', $kategori);
+    }
+
+    /**
+     * Scope untuk foto yang ditampilkan di home
+     */
+    public function scopeTampilkanDiHome($query)
+    {
+        return $query->where('tampilkan_di_home', true);
+    }
+
+    /**
+     * Scope untuk search berdasarkan judul atau deskripsi
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function($q) use ($search) {
+            $q->where('judul', 'like', '%' . $search . '%')
+              ->orWhere('deskripsi', 'like', '%' . $search . '%')
+              ->orWhere('fotografer', 'like', '%' . $search . '%');
+        });
     }
 }

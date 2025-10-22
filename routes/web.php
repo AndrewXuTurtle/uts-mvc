@@ -28,9 +28,6 @@ Route::get('/profil', function () {
     return view('profil');
 })->name('profil');
 
-// Kegiatan routes
-Route::resource('kegiatan', App\Http\Controllers\KegiatanController::class);
-
 // Galeri routes
 Route::resource('galeri', App\Http\Controllers\GaleriController::class);
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Galeri;
-use App\Models\Kegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,10 +11,28 @@ class GaleriController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $galeri = Galeri::with('kegiatan')->latest()->get();
-        return view('galeri.index', compact('galeri'));
+        $query = Galeri::query();
+
+        // Filter berdasarkan kategori
+        if ($request->filled('kategori')) {
+            $query->kategori($request->kategori);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        $galeri = $query->orderBy('urutan', 'asc')
+                        ->orderBy('tanggal', 'desc')
+                        ->paginate(12);
+
+        // Get unique kategori for filter
+        $kategoriList = ['akademik', 'kemahasiswaan', 'fasilitas', 'kegiatan', 'prestasi', 'lainnya'];
+
+        return view('galeri.index', compact('galeri', 'kategoriList'));
     }
 
     /**
@@ -23,8 +40,7 @@ class GaleriController extends Controller
      */
     public function create()
     {
-        $kegiatan = Kegiatan::all();
-        return view('galeri.create', compact('kegiatan'));
+        return view('galeri.create');
     }
 
     /**
@@ -33,23 +49,28 @@ class GaleriController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kegiatan_id' => 'required|exists:tbl_kegiatan,id',
-            'file' => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi',
-            'tipe' => 'required|string|in:foto,video',
-            'keterangan' => 'nullable|string',
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'foto' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB
+            'kategori' => 'required|in:akademik,kemahasiswaan,fasilitas,kegiatan,prestasi,lainnya',
+            'tanggal' => 'nullable|date',
+            'fotografer' => 'nullable|string|max:255',
+            'tampilkan_di_home' => 'nullable|boolean',
+            'urutan' => 'nullable|integer',
         ]);
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('galeri', $filename, 'public');
-            $validated['file'] = $filename;
+        // Handle file upload
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('galeri', 'public');
         }
+
+        // Set defaults
+        $validated['tampilkan_di_home'] = $request->has('tampilkan_di_home') ? true : false;
+        $validated['urutan'] = $validated['urutan'] ?? 0;
 
         Galeri::create($validated);
 
-        return redirect()->route('galeri.index')
-            ->with('success', 'Galeri berhasil ditambahkan');
+        return redirect()->route('galeri.index')->with('success', 'Foto galeri berhasil ditambahkan!');
     }
 
     /**
@@ -57,8 +78,16 @@ class GaleriController extends Controller
      */
     public function show(string $id)
     {
-        $galeri = Galeri::with('kegiatan')->findOrFail($id);
-        return view('galeri.show', compact('galeri'));
+        $galeri = Galeri::findOrFail($id);
+        
+        // Get related photos (same category)
+        $related = Galeri::where('kategori', $galeri->kategori)
+                        ->where('id', '!=', $galeri->id)
+                        ->latest('tanggal')
+                        ->limit(6)
+                        ->get();
+        
+        return view('galeri.show', compact('galeri', 'related'));
     }
 
     /**
@@ -67,8 +96,7 @@ class GaleriController extends Controller
     public function edit(string $id)
     {
         $galeri = Galeri::findOrFail($id);
-        $kegiatan = Kegiatan::all();
-        return view('galeri.edit', compact('galeri', 'kegiatan'));
+        return view('galeri.edit', compact('galeri'));
     }
 
     /**
@@ -76,32 +104,35 @@ class GaleriController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $validated = $request->validate([
-            'kegiatan_id' => 'required|exists:tbl_kegiatan,id',
-            'file' => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi',
-            'tipe' => 'required|string|in:foto,video',
-            'keterangan' => 'nullable|string',
-        ]);
-
         $galeri = Galeri::findOrFail($id);
 
-        if ($request->hasFile('file')) {
-            // Delete old file
-            if ($galeri->file && Storage::disk('public')->exists('galeri/' . $galeri->file)) {
-                Storage::disk('public')->delete('galeri/' . $galeri->file);
-            }
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB
+            'kategori' => 'required|in:akademik,kemahasiswaan,fasilitas,kegiatan,prestasi,lainnya',
+            'tanggal' => 'nullable|date',
+            'fotografer' => 'nullable|string|max:255',
+            'tampilkan_di_home' => 'nullable|boolean',
+            'urutan' => 'nullable|integer',
+        ]);
 
-            // Upload new file
-            $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('galeri', $filename, 'public');
-            $validated['file'] = $filename;
+        // Handle file upload
+        if ($request->hasFile('foto')) {
+            // Delete old foto
+            if ($galeri->foto) {
+                Storage::disk('public')->delete($galeri->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('galeri', 'public');
         }
+
+        // Set defaults
+        $validated['tampilkan_di_home'] = $request->has('tampilkan_di_home') ? true : false;
+        $validated['urutan'] = $validated['urutan'] ?? $galeri->urutan;
 
         $galeri->update($validated);
 
-        return redirect()->route('galeri.index')
-            ->with('success', 'Galeri berhasil diperbarui');
+        return redirect()->route('galeri.index')->with('success', 'Foto galeri berhasil diupdate!');
     }
 
     /**
@@ -111,14 +142,13 @@ class GaleriController extends Controller
     {
         $galeri = Galeri::findOrFail($id);
 
-        // Delete file from storage
-        if ($galeri->file && Storage::disk('public')->exists('galeri/' . $galeri->file)) {
-            Storage::disk('public')->delete('galeri/' . $galeri->file);
+        // Delete foto if exists
+        if ($galeri->foto) {
+            Storage::disk('public')->delete($galeri->foto);
         }
 
         $galeri->delete();
 
-        return redirect()->route('galeri.index')
-            ->with('success', 'Galeri berhasil dihapus');
+        return redirect()->route('galeri.index')->with('success', 'Foto galeri berhasil dihapus!');
     }
 }
