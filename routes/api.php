@@ -26,3 +26,7 @@ Route::prefix('prestasi')->group(function () {
     Route::get('/statistics', [App\Http\Controllers\Api\PrestasiController::class, 'statistics']);
     Route::get('/{id}', [App\Http\Controllers\Api\PrestasiController::class, 'show']);
 });
+
+// Alumni API
+Route::apiResource('alumni', App\Http\Controllers\Api\AlumniController::class);
+Route::get('alumni-statistics', [App\Http\Controllers\Api\AlumniController::class, 'statistics']);

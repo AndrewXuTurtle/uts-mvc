@@ -43,3 +43,5 @@ Route::resource('pengumuman', App\Http\Controllers\PengumumanController::class);
 // Agenda routes
 Route::resource('agenda', App\Http\Controllers\AgendaController::class);
 
+// Alumni routes
+Route::resource('alumni', App\Http\Controllers\AlumniController::class);
