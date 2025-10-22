@@ -85,4 +85,36 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Publikasi
+            </div>
+
+            <!-- Nav Item - Berita -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('berita.index') }}">
+                    <i class="fas fa-fw fa-newspaper"></i>
+                    <span>Berita</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Pengumuman -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('pengumuman.index') }}">
+                    <i class="fas fa-fw fa-bullhorn"></i>
+                    <span>Pengumuman</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Agenda -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('agenda.index') }}">
+                    <i class="fas fa-fw fa-calendar-check"></i>
+                    <span>Agenda</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
         </ul>

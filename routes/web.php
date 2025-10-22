@@ -34,3 +34,12 @@ Route::resource('kegiatan', App\Http\Controllers\KegiatanController::class);
 // Galeri routes
 Route::resource('galeri', App\Http\Controllers\GaleriController::class);
 
+// Berita routes
+Route::resource('berita', App\Http\Controllers\BeritaController::class);
+
+// Pengumuman routes
+Route::resource('pengumuman', App\Http\Controllers\PengumumanController::class);
+
+// Agenda routes
+Route::resource('agenda', App\Http\Controllers\AgendaController::class);
+
