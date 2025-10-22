@@ -16,6 +16,11 @@ class BeritaController extends Controller
     {
         $query = Berita::query();
 
+        // Filter berita biasa (exclude prestasi)
+        if ($request->has('exclude_prestasi') && $request->exclude_prestasi) {
+            $query->beritaBiasa();
+        }
+
         // Filter by date range
         if ($request->has('tanggal_dari')) {
             $query->where('tanggal', '>=', $request->tanggal_dari);
@@ -58,6 +63,14 @@ class BeritaController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penulis' => 'required|string|max:255',
             'tanggal' => 'required|date',
+            'is_prestasi' => 'boolean',
+            'nama_mahasiswa' => 'required_if:is_prestasi,1|nullable|string|max:255',
+            'nim' => 'required_if:is_prestasi,1|nullable|string|max:50',
+            'program_studi' => 'nullable|string|max:255',
+            'tingkat_prestasi' => 'nullable|in:Internasional,Nasional,Regional,Lokal',
+            'jenis_prestasi' => 'nullable|string|max:255',
+            'penyelenggara' => 'nullable|string|max:255',
+            'tanggal_prestasi' => 'nullable|date',
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -115,6 +128,14 @@ class BeritaController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penulis' => 'required|string|max:255',
             'tanggal' => 'required|date',
+            'is_prestasi' => 'boolean',
+            'nama_mahasiswa' => 'required_if:is_prestasi,1|nullable|string|max:255',
+            'nim' => 'required_if:is_prestasi,1|nullable|string|max:50',
+            'program_studi' => 'nullable|string|max:255',
+            'tingkat_prestasi' => 'nullable|in:Internasional,Nasional,Regional,Lokal',
+            'jenis_prestasi' => 'nullable|string|max:255',
+            'penyelenggara' => 'nullable|string|max:255',
+            'tanggal_prestasi' => 'nullable|date',
         ]);
 
         if ($request->hasFile('gambar')) {

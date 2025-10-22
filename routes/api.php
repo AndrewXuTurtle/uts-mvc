@@ -19,3 +19,10 @@ Route::apiResource('pengumuman', App\Http\Controllers\Api\PengumumanController::
 
 // Agenda API
 Route::apiResource('agenda', App\Http\Controllers\Api\AgendaController::class);
+
+// Prestasi Mahasiswa API (khusus untuk halaman prestasi di Next.js)
+Route::prefix('prestasi')->group(function () {
+    Route::get('/', [App\Http\Controllers\Api\PrestasiController::class, 'index']);
+    Route::get('/statistics', [App\Http\Controllers\Api\PrestasiController::class, 'statistics']);
+    Route::get('/{id}', [App\Http\Controllers\Api\PrestasiController::class, 'show']);
+});

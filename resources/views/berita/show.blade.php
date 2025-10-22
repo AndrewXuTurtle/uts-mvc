@@ -23,6 +23,12 @@
 
                     <h2 class="mb-3">{{ $berita->judul }}</h2>
 
+                    @if($berita->is_prestasi)
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-trophy"></i> <strong>Prestasi Mahasiswa</strong>
+                        </div>
+                    @endif
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Penulis:</strong> {{ $berita->penulis }}
@@ -31,6 +37,57 @@
                             <strong>Tanggal:</strong> {{ $berita->tanggal ? $berita->tanggal->format('d F Y') : $berita->tanggal }}
                         </div>
                     </div>
+
+                    @if($berita->is_prestasi)
+                        <hr>
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3"><i class="fas fa-award"></i> Data Prestasi</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <strong>Nama Mahasiswa:</strong><br>
+                                        {{ $berita->nama_mahasiswa }}
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <strong>NIM:</strong><br>
+                                        {{ $berita->nim }}
+                                    </div>
+                                    @if($berita->program_studi)
+                                        <div class="col-md-6 mb-2">
+                                            <strong>Program Studi:</strong><br>
+                                            {{ $berita->program_studi }}
+                                        </div>
+                                    @endif
+                                    @if($berita->tingkat_prestasi)
+                                        <div class="col-md-6 mb-2">
+                                            <strong>Tingkat Prestasi:</strong><br>
+                                            <span class="badge badge-{{ $berita->tingkat_prestasi == 'Internasional' ? 'danger' : ($berita->tingkat_prestasi == 'Nasional' ? 'warning' : 'info') }}">
+                                                {{ $berita->tingkat_prestasi }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                    @if($berita->jenis_prestasi)
+                                        <div class="col-md-6 mb-2">
+                                            <strong>Jenis Prestasi:</strong><br>
+                                            {{ $berita->jenis_prestasi }}
+                                        </div>
+                                    @endif
+                                    @if($berita->penyelenggara)
+                                        <div class="col-md-6 mb-2">
+                                            <strong>Penyelenggara:</strong><br>
+                                            {{ $berita->penyelenggara }}
+                                        </div>
+                                    @endif
+                                    @if($berita->tanggal_prestasi)
+                                        <div class="col-md-6 mb-2">
+                                            <strong>Tanggal Prestasi:</strong><br>
+                                            {{ $berita->tanggal_prestasi->format('d F Y') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     <hr>
 

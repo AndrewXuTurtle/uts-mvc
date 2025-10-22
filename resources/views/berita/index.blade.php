@@ -1,10 +1,6 @@
 @extends('layouts.app')
 
-                    </button>
-                </div>
-                <div class="col-md-auto mt-3 mt-md-0">
-                </div>
-            </div>('content')
+@section('content')
 <div class="container-fluid">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
