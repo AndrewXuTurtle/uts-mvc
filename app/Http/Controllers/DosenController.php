@@ -35,13 +35,16 @@ class DosenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nidn' => 'required|unique:tbl_dosen,nidn',
+            'nidn' => 'required|unique:dosen,nidn',
             'nama' => 'required',
-            'email' => 'required|email|unique:tbl_dosen,email',
+            'email' => 'required|email|unique:dosen,email',
             'program_studi' => 'required',
             'jabatan' => 'required',
             'bidang_keahlian' => 'nullable',
-            'foto' => 'nullable|image|max:2048'
+            'foto' => 'nullable|image|max:2048',
+            'google_scholar_link' => 'nullable|url',
+            'sinta_link' => 'nullable|url',
+            'scopus_link' => 'nullable|url',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -76,13 +79,16 @@ class DosenController extends Controller
     public function update(Request $request, Dosen $dosen)
     {
         $validated = $request->validate([
-            'nidn' => 'required|unique:tbl_dosen,nidn,' . $dosen->id,
+            'nidn' => 'required|unique:dosen,nidn,' . $dosen->id,
             'nama' => 'required',
-            'email' => 'required|email|unique:tbl_dosen,email,' . $dosen->id,
+            'email' => 'required|email|unique:dosen,email,' . $dosen->id,
             'program_studi' => 'required',
             'jabatan' => 'required',
             'bidang_keahlian' => 'nullable',
-            'foto' => 'nullable|image|max:2048'
+            'foto' => 'nullable|image|max:2048',
+            'google_scholar_link' => 'nullable|url',
+            'sinta_link' => 'nullable|url',
+            'scopus_link' => 'nullable|url',
         ]);
 
         if ($request->hasFile('foto')) {

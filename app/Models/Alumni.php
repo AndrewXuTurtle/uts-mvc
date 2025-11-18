@@ -7,66 +7,116 @@ use Illuminate\Database\Eloquent\Model;
 class Alumni extends Model
 {
     protected $table = 'alumni';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
-        'nama',
         'nim',
-        'program_studi',
-        'tahun_lulus',
-        'ipk',
-        'foto',
-        'email',
-        'telepon',
-        'linkedin',
-        'pekerjaan_sekarang',
+        'pekerjaan_saat_ini',
         'nama_perusahaan',
-        'posisi',
+        'posisi_jabatan',
         'alamat_perusahaan',
-        'tanggal_mulai_kerja',
-        'gaji_range',
-        'testimoni',
-        'pencapaian',
+        'no_hp_perusahaan',
+        'gaji_pertama',
+        'gaji_saat_ini',
+        'waktu_tunggu_pekerjaan',
+        'kesesuaian_bidang',
+        'status_data',
+        'linkedin',
+        'instagram',
+        'facebook',
+        'pesan_alumni',
+        'foto_alumni',
     ];
 
     protected $casts = [
-        'tanggal_mulai_kerja' => 'date',
-        'ipk' => 'decimal:2',
-        'gaji_range' => 'decimal:2',
+        'gaji_pertama' => 'decimal:2',
+        'gaji_saat_ini' => 'decimal:2',
+        'waktu_tunggu_pekerjaan' => 'integer',
     ];
 
     /**
-     * Scope untuk filter berdasarkan tahun lulus
+     * Relasi ke Mahasiswa (satu alumni adalah satu mahasiswa)
      */
-    public function scopeTahunLulus($query, $tahun)
+    public function mahasiswa()
     {
-        return $query->where('tahun_lulus', $tahun);
+        return $this->belongsTo(Mahasiswa::class, 'nim', 'nim');
     }
 
     /**
-     * Scope untuk filter berdasarkan program studi
+     * Relationship with KisahSukses
      */
-    public function scopeProgramStudi($query, $prodi)
+    public function kisahSukses()
     {
-        return $query->where('program_studi', 'like', '%' . $prodi . '%');
+        return $this->hasMany(KisahSukses::class, 'nim', 'nim');
     }
 
     /**
-     * Scope untuk filter yang sudah bekerja
+     * Relationship with TracerStudy
      */
-    public function scopeBekerja($query)
+    public function tracerStudies()
     {
-        return $query->whereIn('pekerjaan_sekarang', ['Bekerja', 'Wirausaha']);
+        return $this->hasMany(TracerStudy::class, 'nim', 'nim');
     }
 
     /**
-     * Scope untuk search berdasarkan nama atau nim
+     * Scope untuk alumni dengan data lengkap
      */
-    public function scopeSearch($query, $search)
+    public function scopeLengkap($query)
     {
-        return $query->where(function($q) use ($search) {
-            $q->where('nama', 'like', '%' . $search . '%')
-              ->orWhere('nim', 'like', '%' . $search . '%')
-              ->orWhere('nama_perusahaan', 'like', '%' . $search . '%');
-        });
+        return $query->where('status_data', 'Lengkap');
+    }
+
+    /**
+     * Scope untuk alumni dengan data belum lengkap
+     */
+    public function scopeBelumLengkap($query)
+    {
+        return $query->where('status_data', 'Belum Lengkap');
+    }
+
+    /**
+     * Check if data alumni sudah lengkap
+     */
+    public function isDataComplete()
+    {
+        $requiredFields = [
+            'pekerjaan_saat_ini',
+            'nama_perusahaan',
+            'posisi_jabatan',
+            'waktu_tunggu_pekerjaan',
+            'kesesuaian_bidang',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($this->$field)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Auto update status data based on completion
+     */
+    public function updateDataStatus()
+    {
+        $this->status_data = $this->isDataComplete() ? 'Lengkap' : 'Belum Lengkap';
+        $this->save();
+    }
+
+    /**
+     * Get kesesuaian badge color
+     */
+    public function getKesesuaianBadgeColor()
+    {
+        return match($this->kesesuaian_bidang) {
+            'Sangat Sesuai' => 'success',
+            'Sesuai' => 'primary',
+            'Cukup Sesuai' => 'info',
+            'Kurang Sesuai' => 'warning',
+            'Tidak Sesuai' => 'danger',
+            default => 'secondary'
+        };
     }
 }

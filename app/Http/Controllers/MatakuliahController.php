@@ -46,8 +46,13 @@ class MatakuliahController extends Controller
             'program_studi' => 'required',
             'kurikulum_tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'deskripsi_singkat' => 'nullable',
-            'status_wajib' => 'required|in:Wajib,Pilihan',
+            'status_wajib' => 'required|in:Wajib,Pilihan,1,0',
         ]);
+
+        // Convert Wajib/Pilihan to boolean
+        if (isset($validated['status_wajib'])) {
+            $validated['status_wajib'] = ($validated['status_wajib'] === 'Wajib' || $validated['status_wajib'] === '1' || $validated['status_wajib'] === 1) ? 1 : 0;
+        }
 
         Matakuliah::create($validated);
 
@@ -84,8 +89,13 @@ class MatakuliahController extends Controller
             'program_studi' => 'required',
             'kurikulum_tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'deskripsi_singkat' => 'nullable',
-            'status_wajib' => 'required|in:Wajib,Pilihan',
+            'status_wajib' => 'required|in:Wajib,Pilihan,1,0',
         ]);
+
+        // Convert Wajib/Pilihan to boolean
+        if (isset($validated['status_wajib'])) {
+            $validated['status_wajib'] = ($validated['status_wajib'] === 'Wajib' || $validated['status_wajib'] === '1' || $validated['status_wajib'] === 1) ? 1 : 0;
+        }
 
         $matakuliah->update($validated);
 

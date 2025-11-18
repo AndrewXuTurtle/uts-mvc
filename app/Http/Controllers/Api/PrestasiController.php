@@ -13,7 +13,8 @@ class PrestasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Berita::query()->prestasi();
+        // Eager load mahasiswa relationship for prestasi
+        $query = Berita::query()->prestasi()->with('mahasiswa');
 
         // Filter by tingkat prestasi
         if ($request->has('tingkat_prestasi')) {
@@ -41,7 +42,10 @@ class PrestasiController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('nama_mahasiswa', 'like', "%{$search}%")
                   ->orWhere('judul', 'like', "%{$search}%")
-                  ->orWhere('nim', 'like', "%{$search}%");
+                  ->orWhere('nim', 'like', "%{$search}%")
+                  ->orWhereHas('mahasiswa', function($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -57,14 +61,47 @@ class PrestasiController extends Controller
         $perPage = $request->get('per_page', 10);
         $prestasi = $query->latest('tanggal_prestasi')->paginate($perPage);
 
-        // Add full image URL
+        // Transform to include mahasiswa data
         $prestasi->getCollection()->transform(function ($item) {
-            $data = $item->toArray();
-            $data['gambar_url'] = $item->gambar ? url('storage/' . $item->gambar) : null;
-            return $data;
+            return [
+                'id' => $item->id,
+                'judul' => $item->judul,
+                'isi' => $item->isi,
+                'penulis' => $item->penulis,
+                'tanggal' => $item->tanggal,
+                // Mahasiswa info - prefer from relationship if exists
+                'nim' => $item->nim,
+                'mahasiswa' => $item->mahasiswa ? [
+                    'nim' => $item->mahasiswa->nim,
+                    'nama' => $item->mahasiswa->nama,
+                    'email' => $item->mahasiswa->email,
+                    'kelas' => $item->mahasiswa->kelas,
+                    'prodi' => $item->mahasiswa->prodi,
+                    'tahun_masuk' => $item->mahasiswa->tahun_masuk,
+                ] : [
+                    // Fallback to stored data if relationship not found
+                    'nim' => $item->nim,
+                    'nama' => $item->nama_mahasiswa,
+                    'prodi' => $item->program_studi,
+                ],
+                // Prestasi specific fields
+                'is_prestasi' => $item->is_prestasi,
+                'tingkat_prestasi' => $item->tingkat_prestasi,
+                'jenis_prestasi' => $item->jenis_prestasi,
+                'penyelenggara' => $item->penyelenggara,
+                'tanggal_prestasi' => $item->tanggal_prestasi,
+                // Image
+                'gambar' => $item->gambar,
+                'gambar_url' => $item->gambar ? asset('storage/' . $item->gambar) : null,
+                'created_at' => $item->created_at,
+                'updated_at' => $item->updated_at,
+            ];
         });
 
-        return response()->json($prestasi);
+        return response()->json([
+            'success' => true,
+            'data' => $prestasi
+        ]);
     }
 
     /**
@@ -72,18 +109,52 @@ class PrestasiController extends Controller
      */
     public function show(string $id)
     {
-        $prestasi = Berita::prestasi()->find($id);
+        $prestasi = Berita::prestasi()->with('mahasiswa')->find($id);
         
         if (!$prestasi) {
             return response()->json([
+                'success' => false,
                 'message' => 'Prestasi tidak ditemukan'
             ], 404);
         }
 
-        $data = $prestasi->toArray();
-        $data['gambar_url'] = $prestasi->gambar ? url('storage/' . $prestasi->gambar) : null;
+        $data = [
+            'id' => $prestasi->id,
+            'judul' => $prestasi->judul,
+            'isi' => $prestasi->isi,
+            'penulis' => $prestasi->penulis,
+            'tanggal' => $prestasi->tanggal,
+            // Complete mahasiswa info
+            'nim' => $prestasi->nim,
+            'mahasiswa' => $prestasi->mahasiswa ? [
+                'nim' => $prestasi->mahasiswa->nim,
+                'nama' => $prestasi->mahasiswa->nama,
+                'email' => $prestasi->mahasiswa->email,
+                'no_hp' => $prestasi->mahasiswa->no_hp,
+                'kelas' => $prestasi->mahasiswa->kelas,
+                'prodi' => $prestasi->mahasiswa->prodi,
+                'tahun_masuk' => $prestasi->mahasiswa->tahun_masuk,
+                'foto' => $prestasi->mahasiswa->foto,
+            ] : [
+                'nim' => $prestasi->nim,
+                'nama' => $prestasi->nama_mahasiswa,
+                'prodi' => $prestasi->program_studi,
+            ],
+            // Prestasi details
+            'is_prestasi' => $prestasi->is_prestasi,
+            'tingkat_prestasi' => $prestasi->tingkat_prestasi,
+            'jenis_prestasi' => $prestasi->jenis_prestasi,
+            'penyelenggara' => $prestasi->penyelenggara,
+            'tanggal_prestasi' => $prestasi->tanggal_prestasi,
+            // Image
+            'gambar' => $prestasi->gambar,
+            'gambar_url' => $prestasi->gambar ? asset('storage/' . $prestasi->gambar) : null,
+            'created_at' => $prestasi->created_at,
+            'updated_at' => $prestasi->updated_at,
+        ];
 
         return response()->json([
+            'success' => true,
             'data' => $data
         ]);
     }
@@ -102,6 +173,7 @@ class PrestasiController extends Controller
                 'lokal' => Berita::prestasi()->where('tingkat_prestasi', 'Lokal')->count(),
             ],
             'prestasi_terbaru' => Berita::prestasi()
+                ->with('mahasiswa')
                 ->latest('tanggal_prestasi')
                 ->take(5)
                 ->get()
@@ -109,15 +181,22 @@ class PrestasiController extends Controller
                     return [
                         'id' => $item->id,
                         'judul' => $item->judul,
-                        'nama_mahasiswa' => $item->nama_mahasiswa,
                         'nim' => $item->nim,
+                        'mahasiswa' => [
+                            'nama' => $item->mahasiswa->nama ?? $item->nama_mahasiswa,
+                            'prodi' => $item->mahasiswa->prodi ?? $item->program_studi,
+                        ],
                         'tingkat_prestasi' => $item->tingkat_prestasi,
+                        'jenis_prestasi' => $item->jenis_prestasi,
                         'tanggal_prestasi' => $item->tanggal_prestasi,
-                        'gambar_url' => $item->gambar ? url('storage/' . $item->gambar) : null,
+                        'gambar_url' => $item->gambar ? asset('storage/' . $item->gambar) : null,
                     ];
                 }),
         ];
 
-        return response()->json($stats);
+        return response()->json([
+            'success' => true,
+            'data' => $stats
+        ]);
     }
 }

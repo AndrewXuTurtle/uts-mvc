@@ -29,7 +29,8 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view('project.create');
+        $mahasiswa = \App\Models\Mahasiswa::orderBy('nama')->get();
+        return view('project.create', compact('mahasiswa'));
     }
 
     /**
@@ -38,32 +39,34 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'judul_proyek' => 'required',
-            'deskripsi_singkat' => 'nullable',
-            'nama_mahasiswa' => 'required',
-            'nim_mahasiswa' => 'required',
-            'program_studi' => 'required',
-            'dosen_pembimbing' => 'nullable',
-            'tahun_selesai' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'path_foto_utama' => 'nullable|image|max:2048',
-            'path_foto_galeri.*' => 'nullable|image|max:2048',
-            'keywords' => 'nullable',
+            'nim' => 'required|exists:mahasiswa,nim',
+            'judul_project' => 'required',
+            'deskripsi' => 'nullable',
+            'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+            'tahun_selesai' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
+            'kategori' => 'nullable|string',
+            'teknologi' => 'nullable|string',
+            'dosen_pembimbing' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:2048',
+            'galeri.*' => 'nullable|image|max:2048',
+            'link_demo' => 'nullable|url',
+            'link_github' => 'nullable|url',
+            'status' => 'nullable|in:Draft,Published',
         ]);
 
-        if ($request->hasFile('path_foto_utama')) {
-            $validated['path_foto_utama'] = Project::uploadFoto($request->file('path_foto_utama'));
+        // Default status
+        $validated['status'] = $validated['status'] ?? 'Published';
+
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = Project::uploadFoto($request->file('cover_image'));
         }
 
-        if ($request->hasFile('path_foto_galeri')) {
+        if ($request->hasFile('galeri')) {
             $galeriPaths = [];
-            foreach ($request->file('path_foto_galeri') as $file) {
+            foreach ($request->file('galeri') as $file) {
                 $galeriPaths[] = Project::uploadFoto($file);
             }
-            $validated['path_foto_galeri'] = implode(',', $galeriPaths);
-        } else {
-            // Remove path_foto_galeri from validated data if no files uploaded
-            // to prevent setting it to empty string which violates JSON constraint
-            unset($validated['path_foto_galeri']);
+            $validated['galeri'] = $galeriPaths; // Will be cast to JSON by model
         }
 
         Project::create($validated);
@@ -94,40 +97,36 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'judul_proyek' => 'required',
-            'deskripsi_singkat' => 'nullable',
-            'nama_mahasiswa' => 'required',
-            'nim_mahasiswa' => 'required',
-            'program_studi' => 'required',
-            'dosen_pembimbing' => 'nullable',
-            'tahun_selesai' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'path_foto_utama' => 'nullable|image|max:2048',
-            'path_foto_galeri.*' => 'nullable|image|max:2048',
-            'keywords' => 'nullable',
+            'nim' => 'required|exists:mahasiswa,nim',
+            'judul_project' => 'required',
+            'deskripsi' => 'nullable',
+            'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+            'tahun_selesai' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
+            'kategori' => 'nullable|string',
+            'teknologi' => 'nullable|string',
+            'dosen_pembimbing' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:2048',
+            'galeri.*' => 'nullable|image|max:2048',
+            'link_demo' => 'nullable|url',
+            'link_github' => 'nullable|url',
+            'status' => 'nullable|in:Draft,Published',
         ]);
 
-        if ($request->hasFile('path_foto_utama')) {
+        if ($request->hasFile('cover_image')) {
             // Delete old photo
-            if ($project->path_foto_utama) {
-                Storage::delete('public/' . $project->path_foto_utama);
+            if ($project->cover_image) {
+                Storage::delete('public/' . $project->cover_image);
             }
-            $validated['path_foto_utama'] = Project::uploadFoto($request->file('path_foto_utama'));
+            $validated['cover_image'] = Project::uploadFoto($request->file('cover_image'));
         }
 
-        if ($request->hasFile('path_foto_galeri')) {
+        if ($request->hasFile('galeri')) {
             // Append new galeri photos to existing ones
-            $galeriPaths = [];
-            if ($project->path_foto_galeri) {
-                $galeriPaths = explode(',', $project->path_foto_galeri);
-            }
-            foreach ($request->file('path_foto_galeri') as $file) {
+            $galeriPaths = $project->galeri ?? [];
+            foreach ($request->file('galeri') as $file) {
                 $galeriPaths[] = Project::uploadFoto($file);
             }
-            $validated['path_foto_galeri'] = implode(',', $galeriPaths);
-        } else {
-            // Remove path_foto_galeri from validated data if no files uploaded
-            // to prevent setting it to empty string which violates JSON constraint
-            unset($validated['path_foto_galeri']);
+            $validated['galeri'] = $galeriPaths; // Will be cast to JSON by model
         }
 
         $project->update($validated);
@@ -143,9 +142,8 @@ class ProjectController extends Controller
     {
         $imagePath = $request->input('image_path');
 
-        if ($project->path_foto_galeri && $imagePath) {
-            $galeriPaths = explode(',', $project->path_foto_galeri);
-            $galeriPaths = array_map('trim', $galeriPaths);
+        if ($project->galeri && $imagePath) {
+            $galeriPaths = $project->galeri; // Already an array due to cast
 
             // Find and remove the specific image
             $key = array_search($imagePath, $galeriPaths);
@@ -158,7 +156,7 @@ class ProjectController extends Controller
 
                 // Update the project
                 $project->update([
-                    'path_foto_galeri' => implode(',', array_filter($galeriPaths))
+                    'galeri' => array_values($galeriPaths) // Re-index array
                 ]);
 
                 return response()->json(['success' => true, 'message' => 'Gambar galeri berhasil dihapus']);
@@ -173,13 +171,12 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        if ($project->path_foto_utama) {
-            Storage::delete('public/' . $project->path_foto_utama);
+        if ($project->cover_image) {
+            Storage::delete('public/' . $project->cover_image);
         }
-        if ($project->path_foto_galeri) {
-            $galeri = explode(',', $project->path_foto_galeri);
-            foreach ($galeri as $path) {
-                Storage::delete('public/' . trim($path));
+        if ($project->galeri) {
+            foreach ($project->galeri as $path) {
+                Storage::delete('public/' . $path);
             }
         }
 

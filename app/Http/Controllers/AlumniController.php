@@ -13,7 +13,16 @@ class AlumniController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Alumni::query();
+        $tab = $request->get('tab', 'lengkap'); // default: lengkap
+        
+        $query = Alumni::with('mahasiswa'); // eager load mahasiswa relation
+
+        // Filter by tab (status_data)
+        if ($tab === 'lengkap') {
+            $query->lengkap();
+        } elseif ($tab === 'belum_lengkap') {
+            $query->belumLengkap();
+        }
 
         // Filter berdasarkan tahun lulus
         if ($request->filled('tahun_lulus')) {
@@ -30,15 +39,18 @@ class AlumniController extends Controller
             $query->search($request->search);
         }
 
-        $alumni = $query->orderBy('tahun_lulus', 'desc')
-                        ->orderBy('nama', 'asc')
-                        ->paginate(10);
+        $alumni = $query->orderBy('created_at', 'desc')
+                        ->paginate(15);
 
-        // Get unique years and program studi for filter
-        $tahunList = Alumni::selectRaw('DISTINCT tahun_lulus')->orderBy('tahun_lulus', 'desc')->pluck('tahun_lulus');
-        $prodiList = Alumni::selectRaw('DISTINCT program_studi')->orderBy('program_studi')->pluck('program_studi');
+        // Count for badges
+        $countLengkap = Alumni::lengkap()->count();
+        $countBelumLengkap = Alumni::belumLengkap()->count();
 
-        return view('alumni.index', compact('alumni', 'tahunList', 'prodiList'));
+        // Get unique years and program studi for filter (optional, jika masih digunakan)
+        // $tahunList = Alumni::selectRaw('DISTINCT tahun_lulus')->orderBy('tahun_lulus', 'desc')->pluck('tahun_lulus');
+        // $prodiList = Alumni::selectRaw('DISTINCT program_studi')->orderBy('program_studi')->pluck('program_studi');
+
+        return view('alumni.index', compact('alumni', 'tab', 'countLengkap', 'countBelumLengkap'));
     }
 
     /**

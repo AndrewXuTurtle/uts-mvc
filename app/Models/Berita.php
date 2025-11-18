@@ -57,4 +57,13 @@ class Berita extends Model
     {
         return $query->where('tingkat_prestasi', $tingkat);
     }
+
+    /**
+     * Relationship: Berita (prestasi) belongs to Mahasiswa
+     * For prestasi berita that has nim field
+     */
+    public function mahasiswa()
+    {
+        return $this->belongsTo(Mahasiswa::class, 'nim', 'nim');
+    }
 }

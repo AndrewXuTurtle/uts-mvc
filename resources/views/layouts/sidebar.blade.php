@@ -1,7 +1,7 @@
  <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-start" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-start" href="{{ route('dashboard') }}">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-code"></i>
                 </div>
@@ -31,6 +31,14 @@
                 <a class="nav-link" href="{{ route('dosen.index') }}">
                     <i class="fas fa-fw fa-chalkboard-teacher"></i>
                     <span>Data Dosen</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Mahasiswa -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('mahasiswa.index') }}">
+                    <i class="fas fa-fw fa-user-graduate"></i>
+                    <span>Data Mahasiswa</span>
                 </a>
             </li>
 
@@ -66,19 +74,27 @@
                 </a>
             </li>
 
-            <!-- Nav Item - Kegiatan -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('kegiatan.index') }}">
-                    <i class="fas fa-fw fa-calendar-alt"></i>
-                    <span>Data Kegiatan</span>
-                </a>
-            </li>
-
             <!-- Nav Item - Galeri -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('galeri.index') }}">
                     <i class="fas fa-fw fa-images"></i>
                     <span>Galeri Kegiatan</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Penelitian -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('penelitian.index') }}">
+                    <i class="fas fa-fw fa-microscope"></i>
+                    <span>Data Penelitian</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - PKM -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('pkm.index') }}">
+                    <i class="fas fa-fw fa-lightbulb"></i>
+                    <span>Data PKM</span>
                 </a>
             </li>
 
@@ -114,7 +130,63 @@
                 </a>
             </li>
 
+            <!-- Nav Item - Peraturan -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('peraturan.index') }}">
+                    <i class="fas fa-fw fa-file-pdf"></i>
+                    <span>Peraturan</span>
+                </a>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Alumni
+            </div>
+
+            <!-- Nav Item - Alumni -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('alumni.index') }}">
+                    <i class="fas fa-fw fa-user-tie"></i>
+                    <span>Data Alumni</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Kisah Sukses -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('kisah-sukses.index') }}">
+                    <i class="fas fa-fw fa-trophy"></i>
+                    <span>Kisah Sukses</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Tracer Study -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('tracer-study.index') }}">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>Tracer Study</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Pengaturan
+            </div>
+
+            <!-- Nav Item - Manajemen User -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('users.index') }}">
+                    <i class="fas fa-fw fa-users-cog"></i>
+                    <span>Manajemen User</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
 
         </ul>

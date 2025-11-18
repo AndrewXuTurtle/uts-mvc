@@ -16,20 +16,29 @@ class DosenController extends Controller
             return $data;
         });
 
-        return response()->json($dosen);
+        return response()->json([
+            'success' => true,
+            'data' => $dosen
+        ]);
     }
 
     public function show($id)
     {
         $dosen = Dosen::find($id);
         if (!$dosen) {
-            return response()->json(['message' => 'Dosen not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Dosen not found'
+            ], 404);
         }
 
         $data = $dosen->toArray();
         $data['foto_url'] = $dosen->foto ? url('storage/' . $dosen->foto) : null;
 
-        return response()->json($data);
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
     }
 
     // Add other methods as needed (store, show, update, destroy)

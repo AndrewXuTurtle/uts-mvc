@@ -15,48 +15,78 @@ class AlumniController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Alumni::query();
+        $query = Alumni::with('mahasiswa');
 
-        // Filter berdasarkan tahun lulus
-        if ($request->filled('tahun_lulus')) {
-            $query->tahunLulus($request->tahun_lulus);
+        // Filter berdasarkan status data
+        if ($request->filled('status_data')) {
+            $query->where('status_data', $request->status_data);
         }
 
-        // Filter berdasarkan program studi
-        if ($request->filled('program_studi')) {
-            $query->programStudi($request->program_studi);
+        // Filter berdasarkan pekerjaan saat ini
+        if ($request->filled('pekerjaan_saat_ini')) {
+            $query->where('pekerjaan_saat_ini', $request->pekerjaan_saat_ini);
         }
 
-        // Filter berdasarkan status pekerjaan
-        if ($request->filled('pekerjaan')) {
-            $query->where('pekerjaan_sekarang', $request->pekerjaan);
-        }
-
-        // Filter yang sudah bekerja
-        if ($request->filled('bekerja') && $request->bekerja == 'true') {
-            $query->bekerja();
-        }
-
-        // Search
+        // Search by NIM or name from mahasiswa relation
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nim', 'like', "%{$search}%")
+                  ->orWhereHas('mahasiswa', function($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%");
+                  });
+            });
         }
 
         // Sorting
-        $sortBy = $request->input('sort_by', 'tahun_lulus');
+        $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        $perPage = $request->input('per_page', 15);
-        $alumni = $query->paginate($perPage);
+        
+        if ($sortBy === 'nama') {
+            // Sort by mahasiswa nama
+            $alumni = $query->get()->sortBy(function($item) {
+                return $item->mahasiswa->nama ?? '';
+            });
+            if ($sortOrder === 'desc') {
+                $alumni = $alumni->reverse();
+            }
+            $alumni = $alumni->values();
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+            $alumni = $query->get();
+        }
 
         // Transform data untuk API response
-        $alumni->getCollection()->transform(function ($item) {
-            $item->foto_url = $item->foto ? asset('storage/' . $item->foto) : null;
-            return $item;
+        $transformedAlumni = $alumni->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nim' => $item->nim,
+                'nama' => $item->mahasiswa->nama ?? 'N/A',
+                'email' => $item->mahasiswa->email ?? 'N/A',
+                'prodi' => $item->mahasiswa->prodi ?? 'N/A',
+                'tahun_lulus' => $item->mahasiswa->tahun_lulus ?? null,
+                'pekerjaan_saat_ini' => $item->pekerjaan_saat_ini,
+                'nama_perusahaan' => $item->nama_perusahaan,
+                'posisi_jabatan' => $item->posisi_jabatan,
+                'gaji_pertama' => $item->gaji_pertama,
+                'gaji_saat_ini' => $item->gaji_saat_ini,
+                'waktu_tunggu_pekerjaan' => $item->waktu_tunggu_pekerjaan,
+                'kesesuaian_bidang' => $item->kesesuaian_bidang,
+                'status_data' => $item->status_data,
+                'linkedin' => $item->linkedin,
+                'instagram' => $item->instagram,
+                'pesan_alumni' => $item->pesan_alumni,
+                'foto_alumni' => $item->foto_alumni,
+                'foto_url' => $item->foto_alumni ? asset('storage/' . $item->foto_alumni) : null,
+                'created_at' => $item->created_at,
+                'updated_at' => $item->updated_at,
+            ];
         });
 
-        return response()->json($alumni);
+        return response()->json([
+            'success' => true,
+            'data' => $transformedAlumni
+        ]);
     }
 
     /**
@@ -64,168 +94,54 @@ class AlumniController extends Controller
      */
     public function statistics()
     {
+        $totalAlumni = Alumni::count();
+        $alumniBekerja = Alumni::where('pekerjaan_saat_ini', 'like', '%Bekerja%')->count();
+        $alumniWirausaha = Alumni::where('pekerjaan_saat_ini', 'Wirausaha')->count();
+        $alumniStudi = Alumni::where('pekerjaan_saat_ini', 'Melanjutkan Studi')->count();
+
+        // Calculate average gaji
+        $avgGajiPertama = Alumni::whereNotNull('gaji_pertama')->avg('gaji_pertama');
+        $avgGajiSekarang = Alumni::whereNotNull('gaji_saat_ini')->avg('gaji_saat_ini');
+
+        // Calculate average waktu tunggu
+        $avgWaktuTunggu = Alumni::whereNotNull('waktu_tunggu_pekerjaan')->avg('waktu_tunggu_pekerjaan');
+
+        // Kesesuaian bidang
+        $kesesuaianBidang = Alumni::selectRaw('kesesuaian_bidang, COUNT(*) as total')
+                                ->whereNotNull('kesesuaian_bidang')
+                                ->groupBy('kesesuaian_bidang')
+                                ->get();
+
+        // Employment rate
+        $employmentRate = $totalAlumni > 0 
+            ? (($alumniBekerja + $alumniWirausaha) / $totalAlumni) * 100 
+            : 0;
+
         $stats = [
-            'total_alumni' => Alumni::count(),
-            'bekerja' => Alumni::where('pekerjaan_sekarang', 'Bekerja')->count(),
-            'wirausaha' => Alumni::where('pekerjaan_sekarang', 'Wirausaha')->count(),
-            'melanjutkan_studi' => Alumni::where('pekerjaan_sekarang', 'Melanjutkan Studi')->count(),
-            'by_tahun' => Alumni::selectRaw('tahun_lulus, COUNT(*) as total')
-                                ->groupBy('tahun_lulus')
-                                ->orderBy('tahun_lulus', 'desc')
-                                ->get(),
-            'by_prodi' => Alumni::selectRaw('program_studi, COUNT(*) as total')
-                                ->groupBy('program_studi')
-                                ->orderBy('total', 'desc')
-                                ->get(),
-            'avg_ipk' => Alumni::avg('ipk'),
-            'recent_alumni' => Alumni::with([])
-                                    ->orderBy('created_at', 'desc')
-                                    ->limit(5)
-                                    ->get()
-                                    ->map(function ($item) {
-                                        $item->foto_url = $item->foto ? asset('storage/' . $item->foto) : null;
-                                        return $item;
-                                    }),
+            'total_alumni' => $totalAlumni,
+            'alumni_bekerja' => $alumniBekerja,
+            'alumni_wirausaha' => $alumniWirausaha,
+            'alumni_melanjutkan_studi' => $alumniStudi,
+            'employment_rate' => round($employmentRate, 2),
+            'average_gaji_pertama' => round($avgGajiPertama ?? 0, 2),
+            'average_gaji_sekarang' => round($avgGajiSekarang ?? 0, 2),
+            'average_waktu_tunggu_bulan' => round($avgWaktuTunggu ?? 0, 1),
+            'kesesuaian_bidang' => $kesesuaianBidang,
+            'status_data' => [
+                'lengkap' => Alumni::where('status_data', 'Lengkap')->count(),
+                'belum_lengkap' => Alumni::where('status_data', 'Belum Lengkap')->count(),
+            ],
         ];
 
-        return response()->json($stats);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required|string|max:255',
-            'nim' => 'required|string|unique:alumni,nim|max:255',
-            'program_studi' => 'required|string|max:255',
-            'tahun_lulus' => 'required|integer|min:1900|max:' . (date('Y') + 10),
-            'ipk' => 'nullable|numeric|min:0|max:4',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'email' => 'nullable|email|max:255',
-            'telepon' => 'nullable|string|max:20',
-            'linkedin' => 'nullable|url|max:255',
-            'pekerjaan_sekarang' => 'nullable|string|max:255',
-            'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi' => 'nullable|string|max:255',
-            'alamat_perusahaan' => 'nullable|string',
-            'tanggal_mulai_kerja' => 'nullable|date',
-            'gaji_range' => 'nullable|numeric|min:0',
-            'testimoni' => 'nullable|string',
-            'pencapaian' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $validated = $validator->validated();
-
-        // Handle file upload
-        if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->store('alumni', 'public');
-        }
-
-        $alumni = Alumni::create($validated);
-        $alumni->foto_url = $alumni->foto ? asset('storage/' . $alumni->foto) : null;
-
         return response()->json([
             'success' => true,
-            'message' => 'Data alumni berhasil ditambahkan',
-            'data' => $alumni
-        ], 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $alumni = Alumni::findOrFail($id);
-        $alumni->foto_url = $alumni->foto ? asset('storage/' . $alumni->foto) : null;
-
-        return response()->json([
-            'success' => true,
-            'data' => $alumni
+            'data' => $stats
         ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Note: Alumni data is created through conversion from Mahasiswa.
+     * Direct CRUD operations (store, update, destroy) are not available via API.
+     * Use the web interface to convert Mahasiswa to Alumni.
      */
-    public function update(Request $request, string $id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required|string|max:255',
-            'nim' => 'required|string|max:255|unique:alumni,nim,' . $id,
-            'program_studi' => 'required|string|max:255',
-            'tahun_lulus' => 'required|integer|min:1900|max:' . (date('Y') + 10),
-            'ipk' => 'nullable|numeric|min:0|max:4',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'email' => 'nullable|email|max:255',
-            'telepon' => 'nullable|string|max:20',
-            'linkedin' => 'nullable|url|max:255',
-            'pekerjaan_sekarang' => 'nullable|string|max:255',
-            'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi' => 'nullable|string|max:255',
-            'alamat_perusahaan' => 'nullable|string',
-            'tanggal_mulai_kerja' => 'nullable|date',
-            'gaji_range' => 'nullable|numeric|min:0',
-            'testimoni' => 'nullable|string',
-            'pencapaian' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $validated = $validator->validated();
-
-        // Handle file upload
-        if ($request->hasFile('foto')) {
-            // Delete old foto
-            if ($alumni->foto) {
-                Storage::disk('public')->delete($alumni->foto);
-            }
-            $validated['foto'] = $request->file('foto')->store('alumni', 'public');
-        }
-
-        $alumni->update($validated);
-        $alumni->foto_url = $alumni->foto ? asset('storage/' . $alumni->foto) : null;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data alumni berhasil diupdate',
-            'data' => $alumni
-        ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $alumni = Alumni::findOrFail($id);
-
-        // Delete foto if exists
-        if ($alumni->foto) {
-            Storage::disk('public')->delete($alumni->foto);
-        }
-
-        $alumni->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data alumni berhasil dihapus'
-        ]);
-    }
 }

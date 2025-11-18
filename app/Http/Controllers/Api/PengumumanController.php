@@ -51,7 +51,10 @@ class PengumumanController extends Controller
             return $data;
         });
 
-        return response()->json($pengumuman);
+        return response()->json([
+            'success' => true,
+            'data' => $pengumuman
+        ]);
     }
 
     /**
@@ -80,6 +83,7 @@ class PengumumanController extends Controller
         $data['gambar_url'] = $pengumuman->gambar ? url('storage/' . $pengumuman->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Pengumuman berhasil ditambahkan',
             'data' => $data
         ], 201);
@@ -94,6 +98,7 @@ class PengumumanController extends Controller
         
         if (!$pengumuman) {
             return response()->json([
+                'success' => false,
                 'message' => 'Pengumuman tidak ditemukan'
             ], 404);
         }
@@ -102,6 +107,7 @@ class PengumumanController extends Controller
         $data['gambar_url'] = $pengumuman->gambar ? url('storage/' . $pengumuman->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'data' => $data
         ]);
     }
@@ -115,6 +121,7 @@ class PengumumanController extends Controller
         
         if (!$pengumuman) {
             return response()->json([
+                'success' => false,
                 'message' => 'Pengumuman tidak ditemukan'
             ], 404);
         }
@@ -144,6 +151,7 @@ class PengumumanController extends Controller
         $data['gambar_url'] = $pengumuman->gambar ? url('storage/' . $pengumuman->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Pengumuman berhasil diperbarui',
             'data' => $data
         ]);
@@ -158,6 +166,7 @@ class PengumumanController extends Controller
         
         if (!$pengumuman) {
             return response()->json([
+                'success' => false,
                 'message' => 'Pengumuman tidak ditemukan'
             ], 404);
         }
@@ -170,6 +179,7 @@ class PengumumanController extends Controller
         $pengumuman->delete();
 
         return response()->json([
+            'success' => true,
             'message' => 'Pengumuman berhasil dihapus'
         ]);
     }

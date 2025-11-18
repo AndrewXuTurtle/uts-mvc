@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProfilProdiController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('dosen', DosenController::class);
+Route::apiResource('mahasiswa', App\Http\Controllers\Api\MahasiswaController::class);
 Route::apiResource('project', ProjectController::class);
 Route::apiResource('matakuliah', MatakuliahController::class);
 Route::apiResource('profil-prodi', ProfilProdiController::class);
@@ -34,3 +35,29 @@ Route::get('alumni-statistics', [App\Http\Controllers\Api\AlumniController::clas
 // Galeri API
 Route::apiResource('galeri', App\Http\Controllers\Api\GaleriController::class);
 Route::get('galeri-kategori/{kategori}', [App\Http\Controllers\Api\GaleriController::class, 'byKategori']);
+
+// Penelitian API
+Route::apiResource('penelitian', App\Http\Controllers\Api\PenelitianController::class);
+Route::get('penelitian-dosen/{dosenId}', [App\Http\Controllers\Api\PenelitianController::class, 'byDosen']);
+Route::get('penelitian-statistics', [App\Http\Controllers\Api\PenelitianController::class, 'statistics']);
+
+// PKM API
+Route::apiResource('pkm', App\Http\Controllers\Api\PKMController::class);
+Route::get('pkm-dosen/{dosenId}', [App\Http\Controllers\Api\PKMController::class, 'byDosen']);
+Route::get('pkm-mahasiswa/{mahasiswaId}', [App\Http\Controllers\Api\PKMController::class, 'byMahasiswa']);
+Route::get('pkm-statistics', [App\Http\Controllers\Api\PKMController::class, 'statistics']);
+
+// Kisah Sukses API
+Route::apiResource('kisah-sukses', App\Http\Controllers\Api\KisahSuksesController::class);
+Route::get('kisah-sukses-featured', [App\Http\Controllers\Api\KisahSuksesController::class, 'featured']);
+Route::get('kisah-sukses-statistics', [App\Http\Controllers\Api\KisahSuksesController::class, 'statistics']);
+
+// Tracer Study API
+Route::apiResource('tracer-study', App\Http\Controllers\Api\TracerStudyController::class);
+Route::get('tracer-study-statistics', [App\Http\Controllers\Api\TracerStudyController::class, 'statistics']);
+Route::get('tracer-study-testimonials', [App\Http\Controllers\Api\TracerStudyController::class, 'testimonials']);
+
+// Peraturan API
+Route::get('peraturan', [App\Http\Controllers\Api\PeraturanController::class, 'index']);
+Route::get('peraturan/{id}', [App\Http\Controllers\Api\PeraturanController::class, 'show']);
+Route::get('peraturan-kategori/{kategori}', [App\Http\Controllers\Api\PeraturanController::class, 'byKategori']);

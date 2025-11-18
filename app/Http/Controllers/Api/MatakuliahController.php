@@ -12,16 +12,25 @@ class MatakuliahController extends Controller
     {
         $matakuliah = Matakuliah::all();
 
-        return response()->json($matakuliah);
+        return response()->json([
+            'success' => true,
+            'data' => $matakuliah
+        ]);
     }
 
     public function show($id)
     {
         $matakuliah = Matakuliah::find($id);
         if (!$matakuliah) {
-            return response()->json(['message' => 'Mata Kuliah not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Mata Kuliah not found'
+            ], 404);
         }
 
-        return response()->json($matakuliah);
+        return response()->json([
+            'success' => true,
+            'data' => $matakuliah
+        ]);
     }
 }

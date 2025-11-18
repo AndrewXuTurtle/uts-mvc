@@ -51,7 +51,10 @@ class GaleriController extends Controller
             return $item;
         });
 
-        return response()->json($galeri);
+        return response()->json([
+            'success' => true,
+            'data' => $galeri
+        ]);
     }
 
     /**

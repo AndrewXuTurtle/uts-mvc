@@ -10,21 +10,46 @@ class Dosen extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_dosen';
+    protected $table = 'dosen';
 
     protected $fillable = [
         'nidn',
         'nama',
         'email',
-        'program_studi',
+        'no_hp',
+        'jenis_kelamin',
         'jabatan',
+        'pendidikan_terakhir',
         'bidang_keahlian',
+        'alamat',
         'foto',
+        'prodi',
+        'status',
+        'google_scholar_link',
+        'sinta_link',
+        'scopus_link',
     ];
 
     protected $attributes = [
-        'program_studi' => 'Teknik Perangkat Lunak',
+        'prodi' => 'Teknik Perangkat Lunak',
+        'status' => 'Aktif',
     ];
+
+    /**
+     * Relasi ke Penelitian sebagai ketua
+     */
+    public function penelitianAsKetua()
+    {
+        return $this->hasMany(Penelitian::class, 'ketua_peneliti_id');
+    }
+
+    /**
+     * Relasi ke PKM sebagai pembimbing
+     */
+    public function pkmAsPembimbing()
+    {
+        return $this->hasMany(PKM::class, 'dosen_pembimbing_id');
+    }
 
     // Scope for searching
     public function scopeSearch(Builder $query, $search)
@@ -37,11 +62,16 @@ class Dosen extends Model
         });
     }
 
+    // Scope for active dosen
+    public function scopeActive(Builder $query)
+    {
+        return $query->where('status', 'Aktif');
+    }
+
     // Custom method for handling file uploads
     public static function uploadFoto($file)
     {
         $filename = time() . '_' . $file->getClientOriginalName();
-        // Changed to store directly in public disk
         return $file->storeAs('dosen', $filename, 'public');
     }
 }

@@ -10,45 +10,63 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_project';
-    protected $primaryKey = 'project_id';
+    protected $table = 'projects';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
-        'judul_proyek',
-        'deskripsi_singkat',
-        'nama_mahasiswa',
-        'nim_mahasiswa',
-        'program_studi',
-        'dosen_pembimbing',
+        'nim',
+        'judul_project',
+        'deskripsi',
+        'tahun',
         'tahun_selesai',
-        'path_foto_utama',
-        'path_foto_galeri',
-        'keywords',
+        'kategori',
+        'teknologi',
+        'dosen_pembimbing',
+        'cover_image',
+        'galeri',
+        'link_demo',
+        'link_github',
+        'status',
     ];
 
-    protected $attributes = [
-        'program_studi' => 'Teknik Perangkat Lunak',
+    protected $casts = [
+        'tahun' => 'integer',
+        'tahun_selesai' => 'integer',
+        'galeri' => 'array',
     ];
+
+    /**
+     * Relasi ke Mahasiswa
+     */
+    public function mahasiswa()
+    {
+        return $this->belongsTo(Mahasiswa::class, 'nim', 'nim');
+    }
 
     // Scope for searching
     public function scopeSearch(Builder $query, $search)
     {
         return $query->where(function($query) use ($search) {
-            $query->where('judul_proyek', 'like', "%{$search}%")
-                  ->orWhere('nama_mahasiswa', 'like', "%{$search}%")
-                  ->orWhere('nim_mahasiswa', 'like', "%{$search}%")
+            $query->where('judul_project', 'like', "%{$search}%")
+                  ->orWhere('nim', 'like', "%{$search}%")
                   ->orWhere('dosen_pembimbing', 'like', "%{$search}%")
-                  ->orWhere('keywords', 'like', "%{$search}%");
+                  ->orWhere('teknologi', 'like', "%{$search}%");
         });
     }
 
-    // Scope for filtering by tahun_selesai
+    // Scope for filtering by tahun
     public function scopeFilterTahun(Builder $query, $tahun)
     {
         if ($tahun) {
-            return $query->where('tahun_selesai', $tahun);
+            return $query->where('tahun', $tahun);
         }
         return $query;
+    }
+
+    // Scope for published only
+    public function scopePublished(Builder $query)
+    {
+        return $query->where('status', 'Published');
     }
 
     // Custom method for handling file uploads

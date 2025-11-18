@@ -49,7 +49,10 @@ class BeritaController extends Controller
             return $data;
         });
 
-        return response()->json($berita);
+        return response()->json([
+            'success' => true,
+            'data' => $berita
+        ]);
     }
 
     /**
@@ -83,6 +86,7 @@ class BeritaController extends Controller
         $data['gambar_url'] = $berita->gambar ? url('storage/' . $berita->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Berita berhasil ditambahkan',
             'data' => $data
         ], 201);
@@ -97,6 +101,7 @@ class BeritaController extends Controller
         
         if (!$berita) {
             return response()->json([
+                'success' => false,
                 'message' => 'Berita tidak ditemukan'
             ], 404);
         }
@@ -105,6 +110,7 @@ class BeritaController extends Controller
         $data['gambar_url'] = $berita->gambar ? url('storage/' . $berita->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'data' => $data
         ]);
     }
@@ -118,6 +124,7 @@ class BeritaController extends Controller
         
         if (!$berita) {
             return response()->json([
+                'success' => false,
                 'message' => 'Berita tidak ditemukan'
             ], 404);
         }
@@ -152,6 +159,7 @@ class BeritaController extends Controller
         $data['gambar_url'] = $berita->gambar ? url('storage/' . $berita->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Berita berhasil diperbarui',
             'data' => $data
         ]);
@@ -166,6 +174,7 @@ class BeritaController extends Controller
         
         if (!$berita) {
             return response()->json([
+                'success' => false,
                 'message' => 'Berita tidak ditemukan'
             ], 404);
         }
@@ -178,6 +187,7 @@ class BeritaController extends Controller
         $berita->delete();
 
         return response()->json([
+            'success' => true,
             'message' => 'Berita berhasil dihapus'
         ]);
     }

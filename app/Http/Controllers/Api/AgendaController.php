@@ -60,7 +60,10 @@ class AgendaController extends Controller
             return $data;
         });
 
-        return response()->json($agenda);
+        return response()->json([
+            'success' => true,
+            'data' => $agenda
+        ]);
     }
 
     /**
@@ -90,6 +93,7 @@ class AgendaController extends Controller
         $data['gambar_url'] = $agenda->gambar ? url('storage/' . $agenda->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Agenda berhasil ditambahkan',
             'data' => $data
         ], 201);
@@ -104,6 +108,7 @@ class AgendaController extends Controller
         
         if (!$agenda) {
             return response()->json([
+                'success' => false,
                 'message' => 'Agenda tidak ditemukan'
             ], 404);
         }
@@ -112,6 +117,7 @@ class AgendaController extends Controller
         $data['gambar_url'] = $agenda->gambar ? url('storage/' . $agenda->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'data' => $data
         ]);
     }
@@ -125,6 +131,7 @@ class AgendaController extends Controller
         
         if (!$agenda) {
             return response()->json([
+                'success' => false,
                 'message' => 'Agenda tidak ditemukan'
             ], 404);
         }
@@ -155,6 +162,7 @@ class AgendaController extends Controller
         $data['gambar_url'] = $agenda->gambar ? url('storage/' . $agenda->gambar) : null;
 
         return response()->json([
+            'success' => true,
             'message' => 'Agenda berhasil diperbarui',
             'data' => $data
         ]);
@@ -169,6 +177,7 @@ class AgendaController extends Controller
         
         if (!$agenda) {
             return response()->json([
+                'success' => false,
                 'message' => 'Agenda tidak ditemukan'
             ], 404);
         }
@@ -181,6 +190,7 @@ class AgendaController extends Controller
         $agenda->delete();
 
         return response()->json([
+            'success' => true,
             'message' => 'Agenda berhasil dihapus'
         ]);
     }

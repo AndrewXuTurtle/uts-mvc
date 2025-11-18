@@ -50,55 +50,53 @@
                 <table class="table table-bordered table-striped" width="100%" cellspacing="0">
                     <thead class="thead-light">
                         <tr>
-                            <th>Judul Proyek</th>
+                            <th>Judul Project</th>
                             <th>Mahasiswa</th>
                             <th>NIM</th>
-                            <th>Program Studi</th>
                             <th>Tahun</th>
-                            <th>Foto</th>
+                            <th>Cover</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($projects as $p)
                         <tr>
-                            <td>{{ $p->judul_proyek }}</td>
-                            <td>{{ $p->nama_mahasiswa }}</td>
-                            <td>{{ $p->nim_mahasiswa }}</td>
-                            <td>{{ $p->program_studi }}</td>
-                            <td>{{ $p->tahun_selesai }}</td>
+                            <td>{{ $p->judul_project }}</td>
+                            <td>{{ $p->mahasiswa ? $p->mahasiswa->nama : '-' }}</td>
+                            <td>{{ $p->nim }}</td>
+                            <td>{{ $p->tahun_selesai ?? $p->tahun }}</td>
                             <td class="text-center">
-                                @if($p->path_foto_utama)
-                                    <img src="{{ asset('storage/' . $p->path_foto_utama) }}"
-                                         alt="Foto {{ $p->judul_proyek }}"
+                                @if($p->cover_image)
+                                    <img src="{{ asset('storage/' . $p->cover_image) }}"
+                                         alt="Cover {{ $p->judul_project }}"
                                          class="img-profile rounded"
                                          style="width: 50px; height: 50px; object-fit: cover;">
                                 @else
                                     <i class="fas fa-image text-gray-300" style="font-size: 24px;"></i>
                                 @endif
-                                @if($p->path_foto_galeri)
+                                @if($p->galeri && count($p->galeri) > 0)
                                     <br>
                                     <small class="text-muted">
-                                        <i class="fas fa-images"></i> +{{ count(explode(',', $p->path_foto_galeri)) }} galeri
+                                        <i class="fas fa-images"></i> +{{ count($p->galeri) }} galeri
                                     </small>
                                 @endif
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('project.show', $p->project_id) }}" class="btn btn-info btn-circle btn-sm">
+                                <a href="{{ route('project.show', $p) }}" class="btn btn-info btn-circle btn-sm">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('project.edit', $p->project_id) }}" class="btn btn-warning btn-circle btn-sm">
+                                <a href="{{ route('project.edit', $p) }}" class="btn btn-warning btn-circle btn-sm">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="btn btn-danger btn-circle btn-sm"
-                                        onclick='confirmDelete({{ $p->project_id }})'>
+                                        onclick='confirmDelete({{ $p->id }})'>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center">Tidak ada data project</td>
+                            <td colspan="6" class="text-center">Tidak ada data project</td>
                         </tr>
                         @endforelse
                     </tbody>

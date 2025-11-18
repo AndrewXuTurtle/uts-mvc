@@ -5,9 +5,6 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Data Alumni</h1>
-        <a href="{{ route('alumni.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Alumni
-        </a>
     </div>
 
     @if(session('success'))
@@ -19,124 +16,89 @@
         </div>
     @endif
 
-    <!-- Filter Section -->
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="alumniTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {{ $tab === 'lengkap' ? 'active' : '' }}" 
+               href="{{ route('alumni.index', ['tab' => 'lengkap']) }}">
+                <i class="fas fa-check-circle"></i> Data Lengkap
+                <span class="badge badge-success">{{ $countLengkap }}</span>
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {{ $tab === 'belum_lengkap' ? 'active' : '' }}" 
+               href="{{ route('alumni.index', ['tab' => 'belum_lengkap']) }}">
+                <i class="fas fa-exclamation-circle"></i> Belum Lengkap
+                <span class="badge badge-warning">{{ $countBelumLengkap }}</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Search Form -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Filter Data Alumni</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Pencarian</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('alumni.index') }}">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="tahun_lulus">Tahun Lulus</label>
-                            <select name="tahun_lulus" id="tahun_lulus" class="form-control">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                    <option value="{{ $tahun }}" {{ request('tahun_lulus') == $tahun ? 'selected' : '' }}>
-                                        {{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="program_studi">Program Studi</label>
-                            <select name="program_studi" id="program_studi" class="form-control">
-                                <option value="">Semua Prodi</option>
-                                @foreach($prodiList as $prodi)
-                                    <option value="{{ $prodi }}" {{ request('program_studi') == $prodi ? 'selected' : '' }}>
-                                        {{ $prodi }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="search">Cari (Nama/NIM/Perusahaan)</label>
-                            <input type="text" name="search" id="search" class="form-control" 
-                                   value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div>
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search"></i> Filter
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            <form method="GET" action="{{ route('alumni.index') }}" class="row g-3">
+                <input type="hidden" name="tab" value="{{ $tab }}">
+                <div class="col-md-10">
+                    <input type="text" class="form-control" name="search"
+                           value="{{ request('search') }}" placeholder="Cari NIM atau nama alumni...">
                 </div>
-                @if(request()->hasAny(['tahun_lulus', 'program_studi', 'search']))
-                    <div class="text-right">
-                        <a href="{{ route('alumni.index') }}" class="btn btn-sm btn-secondary">
-                            <i class="fas fa-times"></i> Reset Filter
-                        </a>
-                    </div>
-                @endif
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-search"></i> Cari
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- DataTales Example -->
+    <!-- DataTable -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Alumni</h6>
+            <h6 class="m-0 font-weight-bold text-primary">
+                @if($tab === 'lengkap')
+                    Alumni dengan Data Lengkap
+                @else
+                    Alumni dengan Data Belum Lengkap
+                @endif
+                ({{ $alumni->total() }} data)
+            </h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Foto</th>
-                            <th>Nama</th>
                             <th>NIM</th>
-                            <th>Program Studi</th>
-                            <th>Tahun Lulus</th>
-                            <th>IPK</th>
-                            <th>Pekerjaan</th>
+                            <th>Nama</th>
+                            <th>Prodi</th>
+                            <th>Email</th>
+                            <th>Status Data</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($alumni as $index => $item)
+                        @forelse($alumni as $item)
                             <tr>
-                                <td>{{ $alumni->firstItem() + $index }}</td>
-                                <td>
-                                    @if($item->foto)
-                                        <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama }}" 
-                                             class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
-                                    @else
-                                        <img src="https://via.placeholder.com/60" alt="No Photo" class="img-thumbnail">
-                                    @endif
-                                </td>
-                                <td>{{ $item->nama }}</td>
                                 <td>{{ $item->nim }}</td>
-                                <td>{{ $item->program_studi }}</td>
-                                <td>{{ $item->tahun_lulus }}</td>
-                                <td>{{ $item->ipk ? number_format($item->ipk, 2) : '-' }}</td>
+                                <td>{{ $item->mahasiswa->nama ?? 'N/A' }}</td>
+                                <td>{{ $item->mahasiswa->prodi ?? 'N/A' }}</td>
+                                <td>{{ $item->email ?? '-' }}</td>
                                 <td>
-                                    @if($item->pekerjaan_sekarang)
-                                        <span class="badge badge-{{ $item->pekerjaan_sekarang == 'Bekerja' ? 'success' : ($item->pekerjaan_sekarang == 'Wirausaha' ? 'info' : 'warning') }}">
-                                            {{ $item->pekerjaan_sekarang }}
-                                        </span>
-                                        @if($item->nama_perusahaan)
-                                            <br><small class="text-muted">{{ $item->nama_perusahaan }}</small>
-                                        @endif
+                                    @if($item->status_data === 'Lengkap')
+                                        <span class="badge badge-success">Lengkap</span>
                                     @else
-                                        <span class="text-muted">-</span>
+                                        <span class="badge badge-warning">Belum Lengkap</span>
                                     @endif
                                 </td>
                                 <td>
                                     <a href="{{ route('alumni.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('alumni.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <a href="{{ route('alumni.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit & Lengkapi">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" 
@@ -155,7 +117,7 @@
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    Apakah Anda yakin ingin menghapus data alumni <strong>{{ $item->nama }}</strong>?
+                                                    Apakah Anda yakin ingin menghapus data alumni <strong>{{ $item->mahasiswa->nama ?? 'N/A' }}</strong>?
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -172,7 +134,10 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center">Tidak ada data alumni</td>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>Tidak ada data alumni ditemukan.</p>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -180,9 +145,11 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-3">
-                {{ $alumni->links() }}
+            @if($alumni->hasPages())
+            <div class="d-flex justify-content-center mt-4">
+                {{ $alumni->appends(request()->query())->links() }}
             </div>
+            @endif
         </div>
     </div>
 </div>
