@@ -49,11 +49,11 @@
                     </select>
                 </div>
                 <div class="form-group mr-3">
-                    <label for="dosen_id" class="mr-2">Dosen:</label>
-                    <select name="dosen_id" id="dosen_id" class="form-control">
+                    <label for="ketua_peneliti_id" class="mr-2">Ketua Peneliti:</label>
+                    <select name="ketua_peneliti_id" id="ketua_peneliti_id" class="form-control">
                         <option value="">Semua Dosen</option>
                         @foreach($dosenList as $dosen)
-                        <option value="{{ $dosen->id }}" {{ request('dosen_id') == $dosen->id ? 'selected' : '' }}>
+                        <option value="{{ $dosen->id }}" {{ request('ketua_peneliti_id') == $dosen->id ? 'selected' : '' }}>
                             {{ $dosen->nama }}
                         </option>
                         @endforeach
@@ -86,8 +86,8 @@
                         <tr>
                             <th>No</th>
                             <th>Judul</th>
-                            <th>Dosen</th>
-                            <th>Bidang</th>
+                            <th>Ketua Peneliti</th>
+                            <th>Jenis</th>
                             <th>Tahun</th>
                             <th>Status</th>
                             <th>Dana</th>
@@ -99,22 +99,22 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>
-                                <strong>{{ Str::limit($item->judul, 50) }}</strong>
+                                <strong>{{ Str::limit($item->judul_penelitian, 50) }}</strong>
                                 @if($item->deskripsi)
-                                <br><small class="text-muted">{{ Str::limit($item->deskripsi, 50) }}</small>
+                                <br><small class="text-muted">{{ Str::limit($item->deskripsi, 80) }}</small>
                                 @endif
                             </td>
-                            <td>{{ $item->dosen->nama ?? 'N/A' }}</td>
-                            <td>{{ $item->bidang_penelitian }}</td>
+                            <td>{{ $item->ketuaPeneliti->nama ?? 'N/A' }}</td>
+                            <td>{{ $item->jenis_penelitian ?? '-' }}</td>
                             <td>{{ $item->tahun }}</td>
                             <td>
-                                <span class="badge badge-{{ $item->status == 'completed' ? 'success' : ($item->status == 'ongoing' ? 'primary' : 'secondary') }}">
-                                    {{ ucfirst($item->status) }}
+                                <span class="badge badge-{{ $item->status == 'Selesai' ? 'success' : ($item->status == 'Sedang Berjalan' ? 'primary' : 'secondary') }}">
+                                    {{ $item->status }}
                                 </span>
                             </td>
                             <td>
-                                @if($item->jumlah_dana)
-                                    Rp {{ number_format($item->jumlah_dana, 0, ',', '.') }}
+                                @if($item->dana)
+                                    Rp {{ number_format($item->dana, 0, ',', '.') }}
                                     @if($item->sumber_dana)
                                     <br><small class="text-muted">{{ $item->sumber_dana }}</small>
                                     @endif

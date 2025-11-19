@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Alumni</h1>
         <div>
@@ -16,30 +15,27 @@
     </div>
 
     <div class="row">
-        <!-- Left Column - Foto & Info Dasar -->
+        <!-- Left Column -->
         <div class="col-lg-4">
             <div class="card shadow mb-4">
                 <div class="card-body text-center">
-                    @if($alumni->foto)
-                        <img src="{{ asset('storage/' . $alumni->foto) }}" alt="{{ $alumni->nama }}" 
-                             class="img-fluid rounded mb-3" style="max-width: 100%; height: auto;">
+                    @if($alumni->mahasiswa && $alumni->mahasiswa->foto)
+                        <img src="{{ asset('storage/' . $alumni->mahasiswa->foto) }}" alt="{{ $alumni->mahasiswa->nama }}" 
+                             class="img-fluid rounded-circle mb-3" style="max-width: 200px; height: 200px; object-fit: cover;">
                     @else
-                        <img src="https://via.placeholder.com/300x400?text=No+Photo" alt="No Photo" 
-                             class="img-fluid rounded mb-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 200px; height: 200px; font-size: 80px;">
+                            {{ substr($alumni->mahasiswa->nama ?? 'A', 0, 1) }}
+                        </div>
                     @endif
                     
-                    <h4 class="mb-1">{{ $alumni->nama }}</h4>
+                    <h4 class="mb-1">{{ $alumni->mahasiswa->nama ?? '-' }}</h4>
                     <p class="text-muted mb-2">{{ $alumni->nim }}</p>
-                    
-                    @if($alumni->pekerjaan_sekarang)
-                        <span class="badge badge-{{ $alumni->pekerjaan_sekarang == 'Bekerja' ? 'success' : ($alumni->pekerjaan_sekarang == 'Wirausaha' ? 'info' : 'warning') }} badge-lg">
-                            {{ $alumni->pekerjaan_sekarang }}
-                        </span>
-                    @endif
+                    <span class="badge badge-primary badge-lg">Alumni {{ $alumni->tahun_lulus ?? '-' }}</span>
                 </div>
             </div>
 
-            <!-- Contact Info Card -->
+            <!-- Contact Info -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -47,35 +43,27 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    @if($alumni->email)
+                    @if($alumni->mahasiswa)
                         <div class="mb-2">
                             <i class="fas fa-envelope text-primary"></i>
-                            <a href="mailto:{{ $alumni->email }}">{{ $alumni->email }}</a>
+                            <a href="mailto:{{ $alumni->mahasiswa->email }}">{{ $alumni->mahasiswa->email ?? '-' }}</a>
                         </div>
-                    @endif
-                    
-                    @if($alumni->telepon)
                         <div class="mb-2">
                             <i class="fas fa-phone text-primary"></i>
-                            <a href="tel:{{ $alumni->telepon }}">{{ $alumni->telepon }}</a>
+                            <span>{{ $alumni->mahasiswa->no_telp ?? '-' }}</span>
                         </div>
-                    @endif
-                    
-                    @if($alumni->linkedin)
-                        <div class="mb-2">
-                            <i class="fab fa-linkedin text-primary"></i>
-                            <a href="{{ $alumni->linkedin }}" target="_blank">LinkedIn Profile</a>
+                        <div>
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            <span>{{ $alumni->mahasiswa->alamat ?? '-' }}</span>
                         </div>
-                    @endif
-
-                    @if(!$alumni->email && !$alumni->telepon && !$alumni->linkedin)
-                        <p class="text-muted mb-0">Tidak ada informasi kontak</p>
+                    @else
+                        <p class="text-muted mb-0">Data mahasiswa tidak ditemukan</p>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- Right Column - Detailed Info -->
+        <!-- Right Column -->
         <div class="col-lg-8">
             <!-- Data Akademik -->
             <div class="card shadow mb-4">
@@ -87,116 +75,131 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <strong>NIM:</strong>
+                            <p>{{ $alumni->nim }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Nama Lengkap:</strong>
+                            <p>{{ $alumni->mahasiswa->nama ?? '-' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <strong>Program Studi:</strong>
-                            <p>{{ $alumni->program_studi }}</p>
+                            <p>{{ $alumni->mahasiswa->prodi ?? 'Teknik Perangkat Lunak' }}</p>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-6 mb-3">
                             <strong>Tahun Lulus:</strong>
-                            <p>{{ $alumni->tahun_lulus }}</p>
+                            <p><span class="badge badge-primary">{{ $alumni->tahun_lulus ?? '-' }}</span></p>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <strong>IPK:</strong>
-                            <p>{{ $alumni->ipk ? number_format($alumni->ipk, 2) : '-' }}</p>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status Mahasiswa:</strong>
+                            <p><span class="badge badge-success">{{ $alumni->mahasiswa->status ?? 'Lulus' }}</span></p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Data Pekerjaan -->
-            @if($alumni->pekerjaan_sekarang || $alumni->nama_perusahaan || $alumni->posisi)
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-briefcase"></i> Informasi Pekerjaan
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @if($alumni->pekerjaan_sekarang)
-                                <div class="col-md-6 mb-3">
-                                    <strong>Status Saat Ini:</strong>
-                                    <p>
-                                        <span class="badge badge-{{ $alumni->pekerjaan_sekarang == 'Bekerja' ? 'success' : ($alumni->pekerjaan_sekarang == 'Wirausaha' ? 'info' : 'warning') }}">
-                                            {{ $alumni->pekerjaan_sekarang }}
-                                        </span>
-                                    </p>
-                                </div>
-                            @endif
-                            
-                            @if($alumni->nama_perusahaan)
-                                <div class="col-md-6 mb-3">
-                                    <strong>Perusahaan / Institusi:</strong>
-                                    <p>{{ $alumni->nama_perusahaan }}</p>
-                                </div>
-                            @endif
-                            
-                            @if($alumni->posisi)
-                                <div class="col-md-6 mb-3">
-                                    <strong>Posisi / Jabatan:</strong>
-                                    <p>{{ $alumni->posisi }}</p>
-                                </div>
-                            @endif
-                            
-                            @if($alumni->tanggal_mulai_kerja)
-                                <div class="col-md-6 mb-3">
-                                    <strong>Mulai Bekerja:</strong>
-                                    <p>{{ $alumni->tanggal_mulai_kerja->format('d F Y') }}</p>
-                                </div>
-                            @endif
-                            
-                            @if($alumni->alamat_perusahaan)
-                                <div class="col-md-12 mb-3">
-                                    <strong>Alamat Perusahaan:</strong>
-                                    <p>{{ $alumni->alamat_perusahaan }}</p>
-                                </div>
-                            @endif
+            <!-- Tracer Study -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-briefcase"></i> Tracer Study
+                    </h6>
+                    <a href="{{ route('tracer-study.create', ['nim' => $alumni->nim]) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Tambah
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if($alumni->tracerStudies && $alumni->tracerStudies->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Perusahaan</th>
+                                        <th>Posisi</th>
+                                        <th>Mulai Kerja</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($alumni->tracerStudies as $tracer)
+                                    <tr>
+                                        <td><span class="badge badge-success">{{ $tracer->status_pekerjaan ?? '-' }}</span></td>
+                                        <td>{{ $tracer->nama_perusahaan ?? '-' }}</td>
+                                        <td>{{ $tracer->posisi ?? '-' }}</td>
+                                        <td>{{ $tracer->tanggal_mulai ? \Carbon\Carbon::parse($tracer->tanggal_mulai)->format('M Y') : '-' }}</td>
+                                        <td>
+                                            <a href="{{ route('tracer-study.show', $tracer->id) }}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Testimoni -->
-            @if($alumni->testimoni)
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-quote-left"></i> Testimoni
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-justify" style="line-height: 1.8;">
-                            "{{ $alumni->testimoni }}"
+                    @else
+                        <p class="text-muted mb-0">Belum ada data tracer study. 
+                            <a href="{{ route('tracer-study.create', ['nim' => $alumni->nim]) }}">Tambah data tracer study</a>
                         </p>
-                    </div>
+                    @endif
                 </div>
-            @endif
+            </div>
 
-            <!-- Pencapaian -->
-            @if($alumni->pencapaian)
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-trophy"></i> Pencapaian
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-justify" style="line-height: 1.8;">
-                            {{ $alumni->pencapaian }}
-                        </p>
-                    </div>
+            <!-- Kisah Sukses -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-star"></i> Kisah Sukses
+                    </h6>
+                    <a href="{{ route('kisah-sukses.create', ['nim' => $alumni->nim]) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Tambah
+                    </a>
                 </div>
-            @endif
+                <div class="card-body">
+                    @if($alumni->kisahSukses && $alumni->kisahSukses->count() > 0)
+                        <div class="row">
+                            @foreach($alumni->kisahSukses as $kisah)
+                            <div class="col-md-12 mb-3">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="font-weight-bold text-success mb-1">{{ $kisah->judul ?? 'Tanpa Judul' }}</h5>
+                                                <p class="mb-2">{{ Str::limit($kisah->cerita ?? '', 150) }}</p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar"></i> {{ $kisah->created_at ? $kisah->created_at->format('d M Y') : '-' }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('kisah-sukses.show', $kisah->id) }}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted mb-0">Belum ada kisah sukses. 
+                            <a href="{{ route('kisah-sukses.create', ['nim' => $alumni->nim]) }}">Tambah kisah sukses</a>
+                        </p>
+                    @endif
+                </div>
+            </div>
 
             <!-- Action Buttons -->
             <div class="card shadow mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('alumni.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+                            <i class="fas fa-arrow-left"></i> Kembali
                         </a>
                         <div>
                             <a href="{{ route('alumni.edit', $alumni->id) }}" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Edit Data
+                                <i class="fas fa-edit"></i> Edit
                             </a>
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
                                 <i class="fas fa-trash"></i> Hapus
@@ -220,7 +223,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                Apakah Anda yakin ingin menghapus data alumni <strong>{{ $alumni->nama }}</strong>?
+                Apakah Anda yakin ingin menghapus data alumni <strong>{{ $alumni->mahasiswa->nama ?? $alumni->nim }}</strong>?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>

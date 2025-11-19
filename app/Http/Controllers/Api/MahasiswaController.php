@@ -53,9 +53,9 @@ class MahasiswaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nim' => 'required|string|max:20|unique:tbl_mahasiswa,nim',
+            'nim' => 'required|string|max:20|unique:mahasiswa,nim',
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:tbl_mahasiswa,email',
+            'email' => 'required|email|max:255|unique:mahasiswa,email',
             'jurusan' => 'required|string|max:255',
             'angkatan' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -103,9 +103,9 @@ class MahasiswaController extends Controller
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
         $validator = Validator::make($request->all(), [
-            'nim' => 'required|string|max:20|unique:tbl_mahasiswa,nim,' . $mahasiswa->id,
+            'nim' => 'required|string|max:20|unique:mahasiswa,nim,' . $mahasiswa->id,
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:tbl_mahasiswa,email,' . $mahasiswa->id,
+            'email' => 'required|email|max:255|unique:mahasiswa,email,' . $mahasiswa->id,
             'jurusan' => 'required|string|max:255',
             'angkatan' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

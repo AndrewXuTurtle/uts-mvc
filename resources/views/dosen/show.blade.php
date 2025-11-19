@@ -44,12 +44,28 @@
                             <td>{{ $dosen->program_studi }}</td>
                         </tr>
                         <tr>
+                            <th class="bg-light">Pendidikan Terakhir</th>
+                            <td>{{ $dosen->pendidikan_terakhir ?: '-' }}</td>
+                        </tr>
+                        <tr>
                             <th class="bg-light">Jabatan</th>
                             <td>{{ $dosen->jabatan }}</td>
                         </tr>
                         <tr>
                             <th class="bg-light">Bidang Keahlian</th>
                             <td>{{ $dosen->bidang_keahlian ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">No. HP</th>
+                            <td>{{ $dosen->no_hp ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Jenis Kelamin</th>
+                            <td>{{ $dosen->jenis_kelamin ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Alamat</th>
+                            <td>{{ $dosen->alamat ?: '-' }}</td>
                         </tr>
                     </table>
 

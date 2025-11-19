@@ -10,7 +10,7 @@ class Matakuliah extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_matakuliah';
+    protected $table = 'matakuliah';
     protected $primaryKey = 'mk_id';
 
     protected $fillable = [

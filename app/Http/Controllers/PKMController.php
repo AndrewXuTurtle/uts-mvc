@@ -22,10 +22,9 @@ class PKMController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('judul', 'like', "%{$search}%")
+                $q->where('judul_pkm', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%")
-                  ->orWhere('mitra', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                  ->orWhere('jenis_pkm', 'like', "%{$search}%");
             });
         }
 
@@ -41,18 +40,20 @@ class PKMController extends Controller
 
         // Filter by dosen
         if ($request->has('dosen_id') && !empty($request->dosen_id)) {
-            $query->dosen($request->dosen_id);
+            $query->where('dosen_pembimbing_id', $request->dosen_id);
         }
 
         // Filter by mahasiswa
         if ($request->has('mahasiswa_id') && !empty($request->mahasiswa_id)) {
-            $query->mahasiswa($request->mahasiswa_id);
+            $query->whereHas('mahasiswas', function($q) use ($request) {
+                $q->where('nim', $request->mahasiswa_id);
+            });
         }
 
         $pkm = $query->orderBy('tahun', 'desc')->orderBy('judul_pkm')->paginate(10);
 
         // Get filter options
-        $statusList = ['ongoing' => 'Sedang Berlangsung', 'completed' => 'Selesai', 'published' => 'Dipublikasikan', 'cancelled' => 'Dibatalkan'];
+        $statusList = ['Proposal' => 'Proposal', 'Didanai' => 'Didanai', 'Selesai' => 'Selesai', 'Ditolak' => 'Ditolak'];
         $tahunList = PKM::distinct()->pluck('tahun')->sort()->reverse();
         $dosenList = Dosen::orderBy('nama')->get();
         $mahasiswaList = Mahasiswa::orderBy('nama')->get();
@@ -76,44 +77,38 @@ class PKMController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|array|min:1',
-            'dosen_id.*' => 'exists:dosen,id',
-            'mahasiswa_id' => 'required|array|min:1',
-            'mahasiswa_id.*' => 'exists:tbl_mahasiswa,id',
-            'mitra' => 'nullable|string|max:255',
-            'lokasi' => 'nullable|string|max:255',
-            'biaya' => 'nullable|numeric|min:0',
-            'dokumentasi.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:ongoing,completed,published,cancelled',
+        $validated = $request->validate([
+            'judul_pkm' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'jenis_pkm' => 'required|in:PKM-R,PKM-K,PKM-M,PKM-T,PKM-KC,PKM-AI,PKM-GT',
+            'status' => 'required|string|in:Proposal,Didanai,Selesai,Ditolak',
+            'dana' => 'nullable|numeric|min:0',
+            'pencapaian' => 'nullable|string|max:255',
+            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'dosen_pembimbing_id' => 'required|exists:dosen,id',
+            'mahasiswa_nim' => 'required|array|min:1',
+            'mahasiswa_nim.*' => 'exists:mahasiswa,nim',
+            'mahasiswa_peran' => 'nullable|array',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        // Handle file upload
+        if ($request->hasFile('file_dokumen')) {
+            $validated['file_dokumen'] = $request->file('file_dokumen')->store('pkm/dokumen', 'public');
         }
 
-        $data = $request->only([
-            'judul', 'deskripsi', 'mitra',
-            'lokasi', 'biaya', 'status', 'tahun', 'tanggal_mulai', 'tanggal_selesai'
-        ]);
+        $pkm = PKM::create($validated);
 
-        // Handle multiple image uploads
-        if ($request->hasFile('dokumentasi')) {
-            $data['dokumentasi'] = PKM::uploadDokumentasi($request->file('dokumentasi'));
+        // Sync mahasiswa dengan peran
+        if ($request->has('mahasiswa_nim')) {
+            $mahasiswaData = [];
+            foreach ($request->mahasiswa_nim as $index => $nim) {
+                $mahasiswaData[$nim] = [
+                    'peran' => $request->mahasiswa_peran[$index] ?? 'Anggota'
+                ];
+            }
+            $pkm->mahasiswas()->sync($mahasiswaData);
         }
-
-        $pkm = PKM::create($data);
-
-        // Sync many-to-many relationships
-        $pkm->dosen()->sync($request->dosen_id);
-        $pkm->mahasiswa()->sync($request->mahasiswa_id);
 
         return redirect()->route('pkm.index')
             ->with('success', 'Data PKM berhasil ditambahkan.');
@@ -124,7 +119,7 @@ class PKMController extends Controller
      */
     public function show(PKM $pkm)
     {
-        $pkm->load(['dosen', 'mahasiswa']);
+        $pkm->load(['dosenPembimbing', 'mahasiswas']);
         return view('pkm.show', compact('pkm'));
     }
 
@@ -144,52 +139,42 @@ class PKMController extends Controller
      */
     public function update(Request $request, PKM $pkm)
     {
-        $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|array|min:1',
-            'dosen_id.*' => 'exists:dosen,id',
-            'mahasiswa_id' => 'required|array|min:1',
-            'mahasiswa_id.*' => 'exists:tbl_mahasiswa,id',
-            'mitra' => 'nullable|string|max:255',
-            'lokasi' => 'nullable|string|max:255',
-            'biaya' => 'nullable|numeric|min:0',
-            'dokumentasi.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:ongoing,completed,published,cancelled',
+        $validated = $request->validate([
+            'judul_pkm' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'jenis_pkm' => 'required|in:PKM-R,PKM-K,PKM-M,PKM-T,PKM-KC,PKM-AI,PKM-GT',
+            'status' => 'required|string|in:Proposal,Didanai,Selesai,Ditolak',
+            'dana' => 'nullable|numeric|min:0',
+            'pencapaian' => 'nullable|string|max:255',
+            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'dosen_pembimbing_id' => 'required|exists:dosen,id',
+            'mahasiswa_nim' => 'required|array|min:1',
+            'mahasiswa_nim.*' => 'exists:mahasiswa,nim',
+            'mahasiswa_peran' => 'nullable|array',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $data = $request->only([
-            'judul', 'deskripsi', 'mitra',
-            'lokasi', 'biaya', 'status', 'tahun', 'tanggal_mulai', 'tanggal_selesai'
-        ]);
-
-        // Handle multiple image uploads
-        if ($request->hasFile('dokumentasi')) {
-            // Delete old images if they exist
-            if ($pkm->dokumentasi) {
-                foreach ($pkm->dokumentasi as $oldImage) {
-                    if (Storage::disk('public')->exists($oldImage)) {
-                        Storage::disk('public')->delete($oldImage);
-                    }
-                }
+        // Handle file upload
+        if ($request->hasFile('file_dokumen')) {
+            // Delete old file
+            if ($pkm->file_dokumen) {
+                Storage::disk('public')->delete($pkm->file_dokumen);
             }
-            $data['dokumentasi'] = PKM::uploadDokumentasi($request->file('dokumentasi'));
+            $validated['file_dokumen'] = $request->file('file_dokumen')->store('pkm/dokumen', 'public');
         }
 
-        $pkm->update($data);
+        $pkm->update($validated);
 
-        // Sync many-to-many relationships
-        $pkm->dosen()->sync($request->dosen_id);
-        $pkm->mahasiswa()->sync($request->mahasiswa_id);
+        // Sync mahasiswa dengan peran
+        if ($request->has('mahasiswa_nim')) {
+            $mahasiswaData = [];
+            foreach ($request->mahasiswa_nim as $index => $nim) {
+                $mahasiswaData[$nim] = [
+                    'peran' => $request->mahasiswa_peran[$index] ?? 'Anggota'
+                ];
+            }
+            $pkm->mahasiswas()->sync($mahasiswaData);
+        }
 
         return redirect()->route('pkm.show', $pkm)
             ->with('success', 'Data PKM berhasil diperbarui.');
@@ -201,12 +186,8 @@ class PKMController extends Controller
     public function destroy(PKM $pkm)
     {
         // Delete dokumentasi images if they exist
-        if ($pkm->dokumentasi) {
-            foreach ($pkm->dokumentasi as $image) {
-                if (Storage::disk('public')->exists($image)) {
-                    Storage::disk('public')->delete($image);
-                }
-            }
+        if ($pkm->file_dokumen) {
+            Storage::disk('public')->delete($pkm->file_dokumen);
         }
 
         $pkm->delete();

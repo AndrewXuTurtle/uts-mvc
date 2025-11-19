@@ -92,12 +92,12 @@
                     <thead>
                         <tr>
                             <th>Judul PKM</th>
-                            <th>Mahasiswa</th>
+                            <th>Tim Mahasiswa</th>
                             <th>Dosen Pembimbing</th>
-                            <th>Mitra</th>
+                            <th>Jenis</th>
                             <th>Status</th>
                             <th>Tahun</th>
-                            <th>Biaya</th>
+                            <th>Dana</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -106,44 +106,44 @@
                         <tr>
                             <td>
                                 <div>
-                                    <strong>{{ Str::limit($item->judul, 40) }}</strong>
+                                    <strong>{{ Str::limit($item->judul_pkm, 40) }}</strong>
                                     @if($item->deskripsi)
-                                        <br><small class="text-muted">{{ Str::limit($item->deskripsi, 50) }}</small>
+                                        <br><small class="text-muted">{{ Str::limit($item->deskripsi, 60) }}</small>
                                     @endif
                                 </div>
                             </td>
                             <td>
-                                @if($item->mahasiswa->count() > 0)
-                                    @foreach($item->mahasiswa as $mhs)
+                                @if($item->mahasiswas->count() > 0)
+                                    @foreach($item->mahasiswas->take(2) as $mhs)
+                                        <span class="badge badge-{{ $mhs->pivot->peran == 'Ketua' ? 'primary' : 'secondary' }}" style="font-size: 0.7rem;">{{ $mhs->pivot->peran }}</span>
                                         {{ $mhs->nama }}
                                         @if(!$loop->last)
                                             <br>
                                         @endif
                                     @endforeach
+                                    @if($item->mahasiswas->count() > 2)
+                                        <br><small class="text-muted">+{{ $item->mahasiswas->count() - 2 }} lainnya</small>
+                                    @endif
                                 @else
                                     <span class="text-muted">N/A</span>
                                 @endif
                             </td>
                             <td>
-                                @if($item->dosen->count() > 0)
-                                    @foreach($item->dosen as $d)
-                                        {{ $d->nama }}
-                                        @if(!$loop->last)
-                                            <br>
-                                        @endif
-                                    @endforeach
+                                @if($item->dosenPembimbing)
+                                    {{ $item->dosenPembimbing->nama }}
+                                    <br><small class="text-muted">{{ $item->dosenPembimbing->nidn }}</small>
                                 @else
                                     <span class="text-muted">N/A</span>
                                 @endif
                             </td>
-                            <td>{{ $item->mitra ?? '-' }}</td>
+                            <td>{{ $item->jenis_pkm }}</td>
                             <td>
                                 <span class="badge badge-{{ $item->status_badge }}">
-                                    {{ $item->status_label }}
+                                    {{ $item->status }}
                                 </span>
                             </td>
                             <td>{{ $item->tahun }}</td>
-                            <td>{{ $item->biaya_formatted }}</td>
+                            <td>{{ $item->dana ? 'Rp ' . number_format($item->dana, 0, ',', '.') : '-' }}</td>
                             <td>
                                 <a href="{{ route('pkm.show', $item) }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-eye"></i>

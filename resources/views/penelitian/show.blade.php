@@ -24,13 +24,18 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="col-md-12">
+                            <h4 class="font-weight-bold text-primary"><i class="fas fa-book"></i> {{ $penelitian->judul_penelitian }}</h4>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6">
                             <h5><i class="fas fa-user"></i> Ketua Peneliti</h5>
-                            <p class="text-muted">{{ $penelitian->dosen->nama ?? 'N/A' }}</p>
-                            @if($penelitian->dosen)
-                                                                @if($penelitian->dosen)
-                                        <br><small class="text-muted">NIDN: {{ $penelitian->dosen->nidn }}</small>
-                                    @endif
+                            <p class="text-muted">{{ $penelitian->ketuaPeneliti->nama ?? 'N/A' }}</p>
+                            @if($penelitian->ketuaPeneliti)
+                                <small class="text-muted">NIDN: {{ $penelitian->ketuaPeneliti->nidn }}</small>
                             @endif
                         </div>
                         <div class="col-md-6">
@@ -43,14 +48,14 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <h5><i class="fas fa-flask"></i> Bidang Penelitian</h5>
-                            <p class="text-muted">{{ $penelitian->bidang_penelitian }}</p>
+                            <h5><i class="fas fa-flask"></i> Jenis Penelitian</h5>
+                            <p class="text-muted">{{ $penelitian->jenis_penelitian ?? 'N/A' }}</p>
                         </div>
                         <div class="col-md-6">
                             <h5><i class="fas fa-info-circle"></i> Status</h5>
                             <p class="text-muted">
-                                <span class="badge badge-{{ $penelitian->status == 'completed' ? 'success' : ($penelitian->status == 'ongoing' ? 'primary' : 'secondary') }}">
-                                    {{ ucfirst($penelitian->status) }}
+                                <span class="badge badge-{{ $penelitian->status == 'Selesai' ? 'success' : ($penelitian->status == 'Sedang Berjalan' ? 'primary' : 'secondary') }}">
+                                    {{ $penelitian->status }}
                                 </span>
                             </p>
                         </div>
@@ -69,7 +74,7 @@
                         </div>
                     </div>
 
-                    @if($penelitian->sumber_dana || $penelitian->jumlah_dana)
+                    @if($penelitian->sumber_dana || $penelitian->dana)
                     <hr>
 
                     <div class="row">
@@ -79,7 +84,17 @@
                         </div>
                         <div class="col-md-6">
                             <h5><i class="fas fa-dollar-sign"></i> Jumlah Dana</h5>
-                            <p class="text-muted">{{ $penelitian->jumlah_dana ? 'Rp ' . number_format($penelitian->jumlah_dana, 0, ',', '.') : 'N/A' }}</p>
+                            <p class="text-muted">{{ $penelitian->dana ? 'Rp ' . number_format($penelitian->dana, 0, ',', '.') : 'N/A' }}</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($penelitian->output)
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-trophy"></i> Output Penelitian</h5>
+                            <p class="text-muted">{{ $penelitian->output }}</p>
                         </div>
                     </div>
                     @endif
@@ -118,31 +133,19 @@
             </div>
 
             <!-- Files -->
-            @if($penelitian->file_proposal || $penelitian->file_laporan)
+            @if($penelitian->file_dokumen)
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">File Dokumen</h6>
                 </div>
                 <div class="card-body">
-                    @if($penelitian->file_proposal)
                     <div class="mb-3">
-                        <h6><i class="fas fa-file-pdf"></i> Proposal</h6>
-                        <a href="{{ asset('storage/' . $penelitian->file_proposal) }}"
+                        <h6><i class="fas fa-file-pdf"></i> Dokumen Penelitian</h6>
+                        <a href="{{ asset('storage/' . $penelitian->file_dokumen) }}"
                            target="_blank" class="btn btn-primary btn-sm">
-                            <i class="fas fa-download"></i> Download Proposal
+                            <i class="fas fa-download"></i> Download Dokumen
                         </a>
                     </div>
-                    @endif
-
-                    @if($penelitian->file_laporan)
-                    <div class="mb-3">
-                        <h6><i class="fas fa-file-pdf"></i> Laporan</h6>
-                        <a href="{{ asset('storage/' . $penelitian->file_laporan) }}"
-                           target="_blank" class="btn btn-success btn-sm">
-                            <i class="fas fa-download"></i> Download Laporan
-                        </a>
-                    </div>
-                    @endif
                 </div>
             </div>
             @endif
@@ -154,7 +157,7 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center">
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ucfirst($penelitian->status) }}</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $penelitian->status }}</div>
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Status Penelitian</div>
                     </div>
                     <hr>

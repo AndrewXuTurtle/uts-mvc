@@ -60,6 +60,7 @@ Route::resource('pengumuman', App\Http\Controllers\PengumumanController::class);
 Route::resource('agenda', App\Http\Controllers\AgendaController::class);
 
 // Alumni routes
+Route::get('alumni/sync', [App\Http\Controllers\AlumniController::class, 'syncFromMahasiswa'])->name('alumni.sync');
 Route::resource('alumni', App\Http\Controllers\AlumniController::class);
 
 // Kisah Sukses routes

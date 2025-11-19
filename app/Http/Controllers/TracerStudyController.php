@@ -13,7 +13,7 @@ class TracerStudyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = TracerStudy::with('alumni');
+        $query = TracerStudy::with('alumni.mahasiswa');
 
         // Filter by tahun survey
         if ($request->filled('tahun_survey')) {
@@ -25,20 +25,13 @@ class TracerStudyController extends Controller
             $query->where('status_pekerjaan', $request->status_pekerjaan);
         }
 
-        // Filter by status survey
-        if ($request->filled('status_survey')) {
-            $query->where('status_survey', $request->status_survey);
-        }
-
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_perusahaan', 'like', "%{$search}%")
-                  ->orWhere('posisi_pekerjaan', 'like', "%{$search}%")
-                  ->orWhereHas('alumni', function($q) use ($search) {
-                      $q->where('nama', 'like', "%{$search}%");
-                  });
+                  ->orWhere('posisi', 'like', "%{$search}%")
+                  ->orWhere('nim', 'like', "%{$search}%");
             });
         }
 
@@ -96,41 +89,21 @@ class TracerStudyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nim' => 'required|exists:mahasiswa,nim',
+            'nim' => 'required|exists:alumni,nim',
             'tahun_survey' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'status_pekerjaan' => 'required|string|max:100',
-            'nama_perusahaan' => 'nullable|max:255',
-            'posisi' => 'nullable|max:255',
-            'posisi_pekerjaan' => 'nullable|max:255',
-            'bidang_pekerjaan' => 'nullable|max:255',
+            'status_pekerjaan' => 'required|in:Bekerja Full Time,Bekerja Part Time,Wiraswasta,Melanjutkan Studi,Belum Bekerja,Freelancer',
+            'nama_perusahaan' => 'nullable|string|max:255',
+            'posisi' => 'nullable|string|max:255',
+            'bidang_pekerjaan' => 'nullable|string|max:255',
             'gaji' => 'nullable|numeric|min:0',
-            'gaji_pertama' => 'nullable|numeric|min:0',
-            'gaji_sekarang' => 'nullable|numeric|min:0',
-            'waktu_tunggu_kerja' => 'nullable|string|max:100',
-            'kesesuaian_bidang_studi' => 'nullable|string|max:100',
-            'kesesuaian_pekerjaan' => 'nullable|string|max:100',
-            'tingkat_pendidikan_pekerjaan' => 'nullable|string|max:100',
-            'cara_dapat_kerja' => 'nullable|string|max:255',
-            'bulan_sejak_lulus' => 'nullable|integer|min:0',
-            'kompetensi_teknis' => 'nullable|integer|min:1|max:5',
-            'kompetensi_bahasa_inggris' => 'nullable|integer|min:1|max:5',
-            'kompetensi_komunikasi' => 'nullable|integer|min:1|max:5',
-            'kompetensi_teamwork' => 'nullable|integer|min:1|max:5',
-            'kompetensi_problem_solving' => 'nullable|integer|min:1|max:5',
+            'waktu_tunggu_kerja' => 'nullable|integer|min:0',
+            'kesesuaian_bidang_studi' => 'nullable|in:Sangat Sesuai,Sesuai,Cukup Sesuai,Kurang Sesuai,Tidak Sesuai',
             'kepuasan_prodi' => 'nullable|integer|min:1|max:5',
-            'kepuasan_kurikulum' => 'nullable|integer|min:1|max:5',
-            'kepuasan_dosen' => 'nullable|integer|min:1|max:5',
-            'kepuasan_fasilitas' => 'nullable|integer|min:1|max:5',
-            'saran_prodi' => 'nullable',
-            'saran_untuk_prodi' => 'nullable',
-            'pesan_untuk_juniors' => 'nullable',
-            'kompetensi_didapat' => 'nullable',
-            'saran_pengembangan' => 'nullable',
-            'tanggal_survey' => 'nullable|date',
-            'status_survey' => 'nullable|string|max:50',
+            'saran_prodi' => 'nullable|string',
+            'kompetensi_didapat' => 'nullable|string',
+            'saran_pengembangan' => 'nullable|string',
         ]);
 
-        // Store nim directly (foreign key)
         TracerStudy::create($validated);
 
         return redirect()->route('tracer-study.index')
@@ -164,38 +137,19 @@ class TracerStudyController extends Controller
         $tracerStudy = TracerStudy::findOrFail($id);
 
         $validated = $request->validate([
-            'nim' => 'required|exists:mahasiswa,nim',
+            'nim' => 'required|exists:alumni,nim',
             'tahun_survey' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'status_pekerjaan' => 'required|string|max:100',
-            'nama_perusahaan' => 'nullable|max:255',
-            'posisi' => 'nullable|max:255',
-            'posisi_pekerjaan' => 'nullable|max:255',
-            'bidang_pekerjaan' => 'nullable|max:255',
+            'status_pekerjaan' => 'required|in:Bekerja Full Time,Bekerja Part Time,Wiraswasta,Melanjutkan Studi,Belum Bekerja,Freelancer',
+            'nama_perusahaan' => 'nullable|string|max:255',
+            'posisi' => 'nullable|string|max:255',
+            'bidang_pekerjaan' => 'nullable|string|max:255',
             'gaji' => 'nullable|numeric|min:0',
-            'gaji_pertama' => 'nullable|numeric|min:0',
-            'gaji_sekarang' => 'nullable|numeric|min:0',
-            'waktu_tunggu_kerja' => 'nullable|string|max:100',
-            'kesesuaian_bidang_studi' => 'nullable|string|max:100',
-            'kesesuaian_pekerjaan' => 'nullable|string|max:100',
-            'tingkat_pendidikan_pekerjaan' => 'nullable|string|max:100',
-            'cara_dapat_kerja' => 'nullable|string|max:255',
-            'bulan_sejak_lulus' => 'nullable|integer|min:0',
-            'kompetensi_teknis' => 'nullable|integer|min:1|max:5',
-            'kompetensi_bahasa_inggris' => 'nullable|integer|min:1|max:5',
-            'kompetensi_komunikasi' => 'nullable|integer|min:1|max:5',
-            'kompetensi_teamwork' => 'nullable|integer|min:1|max:5',
-            'kompetensi_problem_solving' => 'nullable|integer|min:1|max:5',
+            'waktu_tunggu_kerja' => 'nullable|integer|min:0',
+            'kesesuaian_bidang_studi' => 'nullable|in:Sangat Sesuai,Sesuai,Cukup Sesuai,Kurang Sesuai,Tidak Sesuai',
             'kepuasan_prodi' => 'nullable|integer|min:1|max:5',
-            'kepuasan_kurikulum' => 'nullable|integer|min:1|max:5',
-            'kepuasan_dosen' => 'nullable|integer|min:1|max:5',
-            'kepuasan_fasilitas' => 'nullable|integer|min:1|max:5',
-            'saran_prodi' => 'nullable',
-            'saran_untuk_prodi' => 'nullable',
-            'pesan_untuk_juniors' => 'nullable',
-            'kompetensi_didapat' => 'nullable',
-            'saran_pengembangan' => 'nullable',
-            'tanggal_survey' => 'nullable|date',
-            'status_survey' => 'nullable|string|max:50',
+            'saran_prodi' => 'nullable|string',
+            'kompetensi_didapat' => 'nullable|string',
+            'saran_pengembangan' => 'nullable|string',
         ]);
 
         $tracerStudy->update($validated);

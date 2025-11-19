@@ -21,10 +21,10 @@
                         @csrf
 
                         <div class="form-group">
-                            <label for="judul">Judul Penelitian *</label>
-                            <input type="text" class="form-control @error('judul') is-invalid @enderror"
-                                   id="judul" name="judul" value="{{ old('judul') }}" required>
-                            @error('judul')
+                            <label for="judul_penelitian">Judul Penelitian *</label>
+                            <input type="text" class="form-control @error('judul_penelitian') is-invalid @enderror"
+                                   id="judul_penelitian" name="judul_penelitian" value="{{ old('judul_penelitian') }}" required>
+                            @error('judul_penelitian')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -39,17 +39,17 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="dosen_id">Ketua Peneliti (Dosen) *</label>
-                            <select class="form-control @error('dosen_id') is-invalid @enderror"
-                                    id="dosen_id" name="dosen_id" required>
+                            <label for="ketua_peneliti_id">Ketua Peneliti (Dosen) *</label>
+                            <select class="form-control @error('ketua_peneliti_id') is-invalid @enderror"
+                                    id="ketua_peneliti_id" name="ketua_peneliti_id" required>
                                 <option value="">Pilih Dosen</option>
                                 @foreach($dosen as $d)
-                                                                            <option value="{{ $d->id }}" {{ old('dosen_id') == $d->id ? 'selected' : '' }}>
-                                            {{ $d->nama }} ({{ $d->nidn }})
-                                        </option>
+                                    <option value="{{ $d->id }}" {{ old('ketua_peneliti_id') == $d->id ? 'selected' : '' }}>
+                                        {{ $d->nama }} ({{ $d->nidn }})
+                                    </option>
                                 @endforeach
                             </select>
-                            @error('dosen_id')
+                            @error('ketua_peneliti_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -71,10 +71,9 @@
                                     <label for="status">Status *</label>
                                     <select class="form-control @error('status') is-invalid @enderror"
                                             id="status" name="status" required>
-                                        <option value="ongoing" {{ old('status') == 'ongoing' ? 'selected' : '' }}>Sedang Berlangsung</option>
-                                        <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
-                                        <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>Dipublikasikan</option>
-                                        <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                                        <option value="Draft" {{ old('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
+                                        <option value="Sedang Berjalan" {{ old('status', 'Sedang Berjalan') == 'Sedang Berjalan' ? 'selected' : '' }}>Sedang Berjalan</option>
+                                        <option value="Selesai" {{ old('status') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
                                     </select>
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -84,10 +83,11 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="bidang_penelitian">Bidang Penelitian *</label>
-                            <input type="text" class="form-control @error('bidang_penelitian') is-invalid @enderror"
-                                   id="bidang_penelitian" name="bidang_penelitian" value="{{ old('bidang_penelitian') }}" required>
-                            @error('bidang_penelitian')
+                            <label for="jenis_penelitian">Jenis Penelitian</label>
+                            <input type="text" class="form-control @error('jenis_penelitian') is-invalid @enderror"
+                                   id="jenis_penelitian" name="jenis_penelitian" value="{{ old('jenis_penelitian') }}" 
+                                   placeholder="Mandiri, Hibah, Kolaborasi, dll">
+                            @error('jenis_penelitian')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -105,10 +105,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="jumlah_dana">Jumlah Dana (Rp)</label>
-                                    <input type="number" class="form-control @error('jumlah_dana') is-invalid @enderror"
-                                           id="jumlah_dana" name="jumlah_dana" value="{{ old('jumlah_dana') }}" min="0">
-                                    @error('jumlah_dana')
+                                    <label for="dana">Jumlah Dana (Rp)</label>
+                                    <input type="number" class="form-control @error('dana') is-invalid @enderror"
+                                           id="dana" name="dana" value="{{ old('dana') }}" min="0" step="0.01">
+                                    @error('dana')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -118,9 +118,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="tanggal_mulai">Tanggal Mulai *</label>
+                                    <label for="tanggal_mulai">Tanggal Mulai</label>
                                     <input type="date" class="form-control @error('tanggal_mulai') is-invalid @enderror"
-                                           id="tanggal_mulai" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}" required>
+                                           id="tanggal_mulai" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}">
                                     @error('tanggal_mulai')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -138,29 +138,24 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="file_proposal">File Proposal</label>
-                                    <input type="file" class="form-control @error('file_proposal') is-invalid @enderror"
-                                           id="file_proposal" name="file_proposal" accept=".pdf,.doc,.docx">
-                                    <small class="form-text text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
-                                    @error('file_proposal')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="file_laporan">File Laporan</label>
-                                    <input type="file" class="form-control @error('file_laporan') is-invalid @enderror"
-                                           id="file_laporan" name="file_laporan" accept=".pdf,.doc,.docx">
-                                    <small class="form-text text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
-                                    @error('file_laporan')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label for="output">Output Penelitian</label>
+                            <textarea class="form-control @error('output') is-invalid @enderror"
+                                      id="output" name="output" rows="2" 
+                                      placeholder="Jurnal, Prosiding, Paten, HKI, dll">{{ old('output') }}</textarea>
+                            @error('output')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="file_dokumen">File Dokumen Penelitian</label>
+                            <input type="file" class="form-control-file @error('file_dokumen') is-invalid @enderror"
+                                   id="file_dokumen" name="file_dokumen" accept=".pdf,.doc,.docx">
+                            <small class="form-text text-muted">Upload proposal atau laporan penelitian. Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                            @error('file_dokumen')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group">
@@ -183,21 +178,22 @@
                 <div class="card-body">
                     <h6>Status Penelitian:</h6>
                     <ul class="small mb-3">
-                        <li><strong>Ongoing:</strong> Penelitian sedang berlangsung</li>
-                        <li><strong>Completed:</strong> Penelitian selesai</li>
-                        <li><strong>Published:</strong> Hasil penelitian dipublikasikan</li>
-                        <li><strong>Cancelled:</strong> Penelitian dibatalkan</li>
+                        <li><strong>Draft:</strong> Proposal masih dalam tahap penyusunan</li>
+                        <li><strong>Sedang Berjalan:</strong> Penelitian sedang dilaksanakan</li>
+                        <li><strong>Selesai:</strong> Penelitian telah selesai</li>
                     </ul>
 
-                    <h6>Bidang Penelitian:</h6>
-                    <p class="small">Contoh: Artificial Intelligence, Data Science, Software Engineering, dll.</p>
+                    <h6>Jenis Penelitian:</h6>
+                    <p class="small">Contoh: Mandiri, Hibah Internal, Hibah Dikti, Kolaborasi, dll.</p>
+
+                    <h6>Output Penelitian:</h6>
+                    <p class="small">Contoh: Jurnal Nasional, Jurnal Internasional, Prosiding, Paten, HKI, dll.</p>
 
                     <h6>File Upload:</h6>
                     <ul class="small">
-                        <li>Proposal: Dokumen proposal penelitian</li>
-                        <li>Laporan: Dokumen laporan akhir penelitian</li>
+                        <li>Upload proposal atau laporan penelitian</li>
                         <li>Format: PDF, DOC, DOCX</li>
-                        <li>Maksimal: 5MB per file</li>
+                        <li>Maksimal: 5MB</li>
                     </ul>
                 </div>
             </div>

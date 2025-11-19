@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumni;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,44 +14,35 @@ class AlumniController extends Controller
      */
     public function index(Request $request)
     {
-        $tab = $request->get('tab', 'lengkap'); // default: lengkap
-        
-        $query = Alumni::with('mahasiswa'); // eager load mahasiswa relation
-
-        // Filter by tab (status_data)
-        if ($tab === 'lengkap') {
-            $query->lengkap();
-        } elseif ($tab === 'belum_lengkap') {
-            $query->belumLengkap();
-        }
+        $query = Alumni::with('mahasiswa');
 
         // Filter berdasarkan tahun lulus
         if ($request->filled('tahun_lulus')) {
-            $query->tahunLulus($request->tahun_lulus);
+            $query->where('tahun_lulus', $request->tahun_lulus);
         }
 
-        // Filter berdasarkan program studi
-        if ($request->filled('program_studi')) {
-            $query->programStudi($request->program_studi);
-        }
-
-        // Search
+        // Search by nama mahasiswa or nim
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nim', 'like', "%{$search}%")
+                  ->orWhereHas('mahasiswa', function($q) use ($search) {
+                      $q->where('nama', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        $alumni = $query->orderBy('created_at', 'desc')
+        $alumni = $query->orderBy('tahun_lulus', 'desc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate(15);
 
-        // Count for badges
-        $countLengkap = Alumni::lengkap()->count();
-        $countBelumLengkap = Alumni::belumLengkap()->count();
+        // Get unique years for filter
+        $tahunList = Alumni::selectRaw('DISTINCT tahun_lulus')
+                           ->whereNotNull('tahun_lulus')
+                           ->orderBy('tahun_lulus', 'desc')
+                           ->pluck('tahun_lulus');
 
-        // Get unique years and program studi for filter (optional, jika masih digunakan)
-        // $tahunList = Alumni::selectRaw('DISTINCT tahun_lulus')->orderBy('tahun_lulus', 'desc')->pluck('tahun_lulus');
-        // $prodiList = Alumni::selectRaw('DISTINCT program_studi')->orderBy('program_studi')->pluck('program_studi');
-
-        return view('alumni.index', compact('alumni', 'tab', 'countLengkap', 'countBelumLengkap'));
+        return view('alumni.index', compact('alumni', 'tahunList'));
     }
 
     /**
@@ -58,7 +50,15 @@ class AlumniController extends Controller
      */
     public function create()
     {
-        return view('alumni.create');
+        // Get mahasiswa yang sudah lulus tapi belum jadi alumni
+        $mahasiswaLulus = Mahasiswa::where('status', 'Lulus')
+            ->whereNotIn('nim', function($query) {
+                $query->select('nim')->from('alumni');
+            })
+            ->orderBy('nama')
+            ->get();
+
+        return view('alumni.create', compact('mahasiswaLulus'));
     }
 
     /**
@@ -67,33 +67,13 @@ class AlumniController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'nim' => 'required|string|unique:alumni,nim|max:255',
-            'program_studi' => 'required|string|max:255',
-            'tahun_lulus' => 'required|integer|min:1900|max:' . (date('Y') + 10),
-            'ipk' => 'nullable|numeric|min:0|max:4',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'email' => 'nullable|email|max:255',
-            'telepon' => 'nullable|string|max:20',
-            'linkedin' => 'nullable|url|max:255',
-            'pekerjaan_sekarang' => 'nullable|string|max:255',
-            'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi' => 'nullable|string|max:255',
-            'alamat_perusahaan' => 'nullable|string',
-            'tanggal_mulai_kerja' => 'nullable|date',
-            'gaji_range' => 'nullable|numeric|min:0',
-            'testimoni' => 'nullable|string',
-            'pencapaian' => 'nullable|string',
+            'nim' => 'required|string|exists:mahasiswa,nim|unique:alumni,nim',
+            'tahun_lulus' => 'required|integer|min:2000|max:' . (date('Y') + 10),
         ]);
-
-        // Handle file upload
-        if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->store('alumni', 'public');
-        }
 
         Alumni::create($validated);
 
-        return redirect()->route('alumni.index')->with('success', 'Data alumni berhasil ditambahkan!');
+        return redirect()->route('alumni.index')->with('success', 'Alumni berhasil ditambahkan!');
     }
 
     /**
@@ -101,7 +81,7 @@ class AlumniController extends Controller
      */
     public function show(string $id)
     {
-        $alumni = Alumni::findOrFail($id);
+        $alumni = Alumni::with(['mahasiswa', 'kisahSukses', 'tracerStudies'])->findOrFail($id);
         return view('alumni.show', compact('alumni'));
     }
 
@@ -110,7 +90,7 @@ class AlumniController extends Controller
      */
     public function edit(string $id)
     {
-        $alumni = Alumni::findOrFail($id);
+        $alumni = Alumni::with('mahasiswa')->findOrFail($id);
         return view('alumni.edit', compact('alumni'));
     }
 
@@ -122,33 +102,8 @@ class AlumniController extends Controller
         $alumni = Alumni::findOrFail($id);
 
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'nim' => 'required|string|max:255|unique:alumni,nim,' . $id,
-            'program_studi' => 'required|string|max:255',
-            'tahun_lulus' => 'required|integer|min:1900|max:' . (date('Y') + 10),
-            'ipk' => 'nullable|numeric|min:0|max:4',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'email' => 'nullable|email|max:255',
-            'telepon' => 'nullable|string|max:20',
-            'linkedin' => 'nullable|url|max:255',
-            'pekerjaan_sekarang' => 'nullable|string|max:255',
-            'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi' => 'nullable|string|max:255',
-            'alamat_perusahaan' => 'nullable|string',
-            'tanggal_mulai_kerja' => 'nullable|date',
-            'gaji_range' => 'nullable|numeric|min:0',
-            'testimoni' => 'nullable|string',
-            'pencapaian' => 'nullable|string',
+            'tahun_lulus' => 'required|integer|min:2000|max:' . (date('Y') + 10),
         ]);
-
-        // Handle file upload
-        if ($request->hasFile('foto')) {
-            // Delete old foto
-            if ($alumni->foto) {
-                Storage::disk('public')->delete($alumni->foto);
-            }
-            $validated['foto'] = $request->file('foto')->store('alumni', 'public');
-        }
 
         $alumni->update($validated);
 
@@ -161,14 +116,32 @@ class AlumniController extends Controller
     public function destroy(string $id)
     {
         $alumni = Alumni::findOrFail($id);
-
-        // Delete foto if exists
-        if ($alumni->foto) {
-            Storage::disk('public')->delete($alumni->foto);
-        }
-
         $alumni->delete();
 
         return redirect()->route('alumni.index')->with('success', 'Data alumni berhasil dihapus!');
+    }
+    
+    /**
+     * Auto create alumni from mahasiswa with status "Lulus"
+     */
+    public function syncFromMahasiswa()
+    {
+        $mahasiswaLulus = Mahasiswa::where('status', 'Lulus')
+            ->whereNotIn('nim', function($query) {
+                $query->select('nim')->from('alumni');
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($mahasiswaLulus as $mhs) {
+            Alumni::create([
+                'nim' => $mhs->nim,
+                'tahun_lulus' => $mhs->tahun_lulus ?? date('Y'),
+            ]);
+            $count++;
+        }
+
+        return redirect()->route('alumni.index')
+            ->with('success', "Berhasil menambahkan {$count} alumni dari data mahasiswa!");
     }
 }

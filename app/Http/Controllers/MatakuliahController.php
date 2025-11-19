@@ -39,7 +39,7 @@ class MatakuliahController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_mk' => 'required|unique:tbl_matakuliah,kode_mk',
+            'kode_mk' => 'required|unique:matakuliah,kode_mk',
             'nama_mk' => 'required',
             'sks' => 'required|integer|min:1|max:6',
             'semester' => 'required|integer|min:1|max:8',
@@ -82,7 +82,7 @@ class MatakuliahController extends Controller
     public function update(Request $request, Matakuliah $matakuliah)
     {
         $validated = $request->validate([
-            'kode_mk' => 'required|unique:tbl_matakuliah,kode_mk,' . $matakuliah->mk_id . ',mk_id',
+            'kode_mk' => 'required|unique:matakuliah,kode_mk,' . $matakuliah->mk_id . ',mk_id',
             'nama_mk' => 'required',
             'sks' => 'required|integer|min:1|max:6',
             'semester' => 'required|integer|min:1|max:8',

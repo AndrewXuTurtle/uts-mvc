@@ -14,7 +14,7 @@ class PenelitianController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Penelitian::with('dosen');
+        $query = Penelitian::with('ketuaPeneliti');
 
         // Filter berdasarkan status
         if ($request->filled('status')) {
@@ -27,8 +27,8 @@ class PenelitianController extends Controller
         }
 
         // Filter berdasarkan dosen
-        if ($request->filled('dosen_id')) {
-            $query->dosen($request->dosen_id);
+        if ($request->filled('ketua_peneliti_id')) {
+            $query->where('ketua_peneliti_id', $request->ketua_peneliti_id);
         }
 
         // Search
@@ -41,7 +41,7 @@ class PenelitianController extends Controller
                            ->paginate(12);
 
         // Get filter options
-        $statusList = ['ongoing', 'completed', 'published', 'cancelled'];
+        $statusList = ['Draft', 'Sedang Berjalan', 'Selesai'];
         $tahunList = Penelitian::select('tahun')->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
         $dosenList = Dosen::orderBy('nama')->get();
 
@@ -63,27 +63,23 @@ class PenelitianController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul_penelitian' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|exists:dosen,id',
+            'ketua_peneliti_id' => 'required|exists:dosen,id',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'status' => 'required|in:ongoing,completed,published,cancelled',
-            'bidang_penelitian' => 'required|string|max:255',
+            'status' => 'required|in:Draft,Sedang Berjalan,Selesai',
+            'jenis_penelitian' => 'nullable|string|max:255',
             'sumber_dana' => 'nullable|string|max:255',
-            'jumlah_dana' => 'nullable|numeric|min:0',
-            'tanggal_mulai' => 'required|date',
+            'dana' => 'nullable|numeric|min:0',
+            'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'file_proposal' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
-            'file_laporan' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
+            'output' => 'nullable|string',
+            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
         ]);
 
         // Handle file uploads
-        if ($request->hasFile('file_proposal')) {
-            $validated['file_proposal'] = $request->file('file_proposal')->store('penelitian/proposal', 'public');
-        }
-
-        if ($request->hasFile('file_laporan')) {
-            $validated['file_laporan'] = $request->file('file_laporan')->store('penelitian/laporan', 'public');
+        if ($request->hasFile('file_dokumen')) {
+            $validated['file_dokumen'] = $request->file('file_dokumen')->store('penelitian/dokumen', 'public');
         }
 
         Penelitian::create($validated);
@@ -118,35 +114,27 @@ class PenelitianController extends Controller
         $penelitian = Penelitian::findOrFail($id);
 
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul_penelitian' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|exists:dosen,id',
+            'ketua_peneliti_id' => 'required|exists:dosen,id',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'status' => 'required|in:ongoing,completed,published,cancelled',
-            'bidang_penelitian' => 'required|string|max:255',
+            'status' => 'required|in:Draft,Sedang Berjalan,Selesai',
+            'jenis_penelitian' => 'nullable|string|max:255',
             'sumber_dana' => 'nullable|string|max:255',
-            'jumlah_dana' => 'nullable|numeric|min:0',
-            'tanggal_mulai' => 'required|date',
+            'dana' => 'nullable|numeric|min:0',
+            'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'file_proposal' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
-            'file_laporan' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
+            'output' => 'nullable|string',
+            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // 5MB
         ]);
 
         // Handle file uploads
-        if ($request->hasFile('file_proposal')) {
+        if ($request->hasFile('file_dokumen')) {
             // Delete old file if exists
-            if ($penelitian->file_proposal) {
-                Storage::disk('public')->delete($penelitian->file_proposal);
+            if ($penelitian->file_dokumen) {
+                Storage::disk('public')->delete($penelitian->file_dokumen);
             }
-            $validated['file_proposal'] = $request->file('file_proposal')->store('penelitian/proposal', 'public');
-        }
-
-        if ($request->hasFile('file_laporan')) {
-            // Delete old file if exists
-            if ($penelitian->file_laporan) {
-                Storage::disk('public')->delete($penelitian->file_laporan);
-            }
-            $validated['file_laporan'] = $request->file('file_laporan')->store('penelitian/laporan', 'public');
+            $validated['file_dokumen'] = $request->file('file_dokumen')->store('penelitian/dokumen', 'public');
         }
 
         $penelitian->update($validated);
@@ -162,12 +150,8 @@ class PenelitianController extends Controller
         $penelitian = Penelitian::findOrFail($id);
 
         // Delete associated files
-        if ($penelitian->file_proposal) {
-            Storage::disk('public')->delete($penelitian->file_proposal);
-        }
-
-        if ($penelitian->file_laporan) {
-            Storage::disk('public')->delete($penelitian->file_laporan);
+        if ($penelitian->file_dokumen) {
+            Storage::disk('public')->delete($penelitian->file_dokumen);
         }
 
         $penelitian->delete();
