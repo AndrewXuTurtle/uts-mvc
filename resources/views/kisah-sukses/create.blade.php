@@ -5,8 +5,8 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Tambah Kisah Sukses</h1>
-        <a href="{{ route('kisah-sukses.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali
+        <a href="{{ route('kisah-sukses.index') }}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
 
@@ -88,24 +88,6 @@
                     </button>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="kategori">Kategori <span class="text-danger">*</span></label>
-                            <select name="kategori" id="kategori" class="form-control @error('kategori') is-invalid @enderror" required>
-                                <option value="">Pilih Kategori</option>
-                                <option value="karir" {{ old('kategori') == 'karir' ? 'selected' : '' }}>Karir</option>
-                                <option value="wirausaha" {{ old('kategori') == 'wirausaha' ? 'selected' : '' }}>Wirausaha</option>
-                                <option value="prestasi" {{ old('kategori') == 'prestasi' ? 'selected' : '' }}>Prestasi</option>
-                                <option value="melanjutkan_studi" {{ old('kategori') == 'melanjutkan_studi' ? 'selected' : '' }}>Melanjutkan Studi</option>
-                            </select>
-                            @error('kategori')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label for="judul">Judul <span class="text-danger">*</span></label>
                     <input type="text" name="judul" id="judul" class="form-control @error('judul') is-invalid @enderror" 
@@ -116,107 +98,70 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="cerita">Kisah Sukses <span class="text-danger">*</span></label>
+                    <label for="kisah">Kisah Sukses <span class="text-danger">*</span></label>
                     <textarea name="kisah" id="kisah" rows="10" class="form-control @error('kisah') is-invalid @enderror" required>{{ old('kisah') }}</textarea>
+                    <small class="form-text text-muted">Ceritakan perjalanan sukses alumni</small>
                     @error('kisah')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="quote">Quote</label>
-                    <textarea name="quote" id="quote" rows="3" class="form-control @error('quote') is-invalid @enderror">{{ old('quote') }}</textarea>
-                    @error('quote')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="pencapaian">Pencapaian</label>
+                            <input type="text" name="pencapaian" id="pencapaian" class="form-control @error('pencapaian') is-invalid @enderror" 
+                                   value="{{ old('pencapaian') }}" maxlength="255" placeholder="Contoh: CEO di Perusahaan X">
+                            <small class="form-text text-muted">Posisi/pencapaian saat ini</small>
+                            @error('pencapaian')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="tahun_pencapaian">Tahun Pencapaian</label>
+                            <input type="number" name="tahun_pencapaian" id="tahun_pencapaian" 
+                                   class="form-control @error('tahun_pencapaian') is-invalid @enderror" 
+                                   value="{{ old('tahun_pencapaian', date('Y')) }}" 
+                                   min="2000" max="{{ date('Y') + 1 }}">
+                            @error('tahun_pencapaian')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="foto_utama">Foto Utama</label>
-                            <input type="file" name="foto_utama" id="foto_utama" class="form-control-file @error('foto_utama') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
+                            <label for="foto">Foto</label>
+                            <input type="file" name="foto" id="foto" class="form-control-file @error('foto') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
                             <small class="form-text text-muted">Max 2MB (JPEG, PNG, JPG)</small>
-                            @error('foto_utama')
+                            @error('foto')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="galeri_foto">Galeri Foto (Multiple)</label>
-                            <input type="file" name="galeri_foto[]" id="galeri_foto" class="form-control-file @error('galeri_foto') is-invalid @enderror" 
-                                   accept="image/jpeg,image/png,image/jpg" multiple>
-                            <small class="form-text text-muted">Max 2MB per foto (JPEG, PNG, JPG)</small>
-                            @error('galeri_foto')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="video_url">Video URL (YouTube/Vimeo)</label>
-                    <input type="url" name="video_url" id="video_url" class="form-control @error('video_url') is-invalid @enderror" 
-                           value="{{ old('video_url') }}" placeholder="https://youtube.com/watch?v=...">
-                    @error('video_url')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="tags">Tags (pisahkan dengan koma)</label>
-                    <input type="text" name="tags" id="tags" class="form-control @error('tags') is-invalid @enderror" 
-                           value="{{ old('tags') }}" placeholder="startup, international, tech-company">
-                    <small class="form-text text-muted">Contoh: startup, international, tech-company</small>
-                    @error('tags')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="tanggal_publish">Tanggal Publish <span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_publish" id="tanggal_publish" 
-                                   class="form-control @error('tanggal_publish') is-invalid @enderror" 
-                                   value="{{ old('tanggal_publish', date('Y-m-d')) }}" required>
-                            @error('tanggal_publish')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="status">Status <span class="text-danger">*</span></label>
                             <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required>
-                                <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                                <option value="published" {{ old('status', 'published') == 'published' ? 'selected' : '' }}>Published</option>
-                                <option value="archived" {{ old('status') == 'archived' ? 'selected' : '' }}>Archived</option>
+                                <option value="Draft" {{ old('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
+                                <option value="Published" {{ old('status', 'Published') == 'Published' ? 'selected' : '' }}>Published</option>
                             </select>
                             @error('status')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" name="is_featured" id="is_featured" class="custom-control-input" 
-                                       value="1" {{ old('is_featured') ? 'checked' : '' }}>
-                                <label class="custom-control-label" for="is_featured">
-                                    <i class="fas fa-star text-warning"></i> Featured Story
-                                </label>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="form-group mt-4">
+                <hr>
+
+                <div class="form-group">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Simpan
                     </button>
@@ -232,35 +177,25 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    let alumniData = null;
-
-    // Validate NIM button click
+    // Validate NIM
     $('#btnValidateNim').click(function() {
-        const nim = $('#nim_input').val().trim();
+        const nim = $('#nim_input').val();
         
         if (!nim) {
             alert('Silakan masukkan NIM terlebih dahulu');
             return;
         }
 
-        // Show loading
-        $(this).html('<i class="fas fa-spinner fa-spin"></i> Validating...').prop('disabled', true);
-        $('#alumniInfo').addClass('d-none');
-        $('#alumniError').addClass('d-none');
-
-        // AJAX request
         $.ajax({
             url: '{{ route("kisah-sukses.validate-nim") }}',
-            type: 'POST',
+            method: 'POST',
             data: {
-                _token: '{{ csrf_token() }}',
-                nim: nim
+                nim: nim,
+                _token: '{{ csrf_token() }}'
             },
             success: function(response) {
                 if (response.success) {
-                    alumniData = response.data;
-                    
-                    // Display alumni info
+                    // Show alumni info
                     $('#info_nim').text(response.data.nim);
                     $('#info_nama').text(response.data.nama);
                     $('#info_prodi').text(response.data.prodi);
@@ -268,50 +203,40 @@ $(document).ready(function() {
                     
                     $('#alumniInfo').removeClass('d-none');
                     $('#alumniError').addClass('d-none');
+                } else {
+                    $('#error_message').text(response.message);
+                    $('#alumniError').removeClass('d-none');
+                    $('#alumniInfo').addClass('d-none');
                 }
             },
             error: function(xhr) {
-                const response = xhr.responseJSON;
-                $('#error_message').text(response.message || 'Terjadi kesalahan saat validasi NIM');
+                const message = xhr.responseJSON?.message || 'NIM tidak ditemukan';
+                $('#error_message').text(message);
                 $('#alumniError').removeClass('d-none');
                 $('#alumniInfo').addClass('d-none');
-            },
-            complete: function() {
-                $('#btnValidateNim').html('<i class="fas fa-search"></i> Validasi NIM').prop('disabled', false);
             }
         });
     });
 
     // Proceed to form
     $('#btnProceed').click(function() {
-        if (alumniData) {
-            // Fill hidden field
-            $('#nim_hidden').val(alumniData.nim);
-            $('#form_alumni_name').text(alumniData.nama);
-            $('#form_alumni_nim').text(alumniData.nim);
-            
-            // Show form, hide validation
-            $('#nimValidationSection').addClass('d-none');
-            $('#kisahSuksesForm').removeClass('d-none');
-        }
+        const nim = $('#nim_input').val();
+        const nama = $('#info_nama').text();
+        
+        $('#nim_hidden').val(nim);
+        $('#form_alumni_nim').text(nim);
+        $('#form_alumni_name').text(nama);
+        
+        $('#nimValidationSection').addClass('d-none');
+        $('#kisahSuksesForm').removeClass('d-none');
     });
 
-    // Change NIM button
+    // Change NIM
     $('#btnChangeNim').click(function() {
-        $('#nimValidationSection').removeClass('d-none');
         $('#kisahSuksesForm').addClass('d-none');
-        $('#nim_input').val('').focus();
+        $('#nimValidationSection').removeClass('d-none');
         $('#alumniInfo').addClass('d-none');
-        $('#alumniError').addClass('d-none');
-        alumniData = null;
-    });
-
-    // Enter key on NIM input
-    $('#nim_input').keypress(function(e) {
-        if (e.which === 13) {
-            e.preventDefault();
-            $('#btnValidateNim').click();
-        }
+        $('#nim_input').val('');
     });
 });
 </script>

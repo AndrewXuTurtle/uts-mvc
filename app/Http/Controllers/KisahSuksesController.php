@@ -95,10 +95,10 @@ class KisahSuksesController extends Controller
             'nim' => 'required|exists:mahasiswa,nim',
             'judul' => 'required|max:255',
             'kisah' => 'required',
-            'pencapaian' => 'required|max:255',
-            'tahun_pencapaian' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+            'pencapaian' => 'nullable|max:255',
+            'tahun_pencapaian' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'status' => 'required|in:Draft,Published,Archived',
+            'status' => 'required|in:Draft,Published',
         ]);
 
         // Handle foto upload
@@ -141,10 +141,10 @@ class KisahSuksesController extends Controller
             'nim' => 'required|exists:mahasiswa,nim',
             'judul' => 'required|max:255',
             'kisah' => 'required',
-            'pencapaian' => 'required|max:255',
-            'tahun_pencapaian' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+            'pencapaian' => 'nullable|max:255',
+            'tahun_pencapaian' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'status' => 'required|in:Draft,Published,Archived',
+            'status' => 'required|in:Draft,Published',
         ]);
 
         // Handle foto upload

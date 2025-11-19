@@ -27,22 +27,11 @@
         <div class="card-body">
             <form method="GET" class="form-inline">
                 <div class="form-group mr-3">
-                    <label for="kategori" class="mr-2">Kategori:</label>
-                    <select name="kategori" id="kategori" class="form-control">
-                        <option value="">Semua Kategori</option>
-                        <option value="karir" {{ request('kategori') == 'karir' ? 'selected' : '' }}>Karir</option>
-                        <option value="wirausaha" {{ request('kategori') == 'wirausaha' ? 'selected' : '' }}>Wirausaha</option>
-                        <option value="prestasi" {{ request('kategori') == 'prestasi' ? 'selected' : '' }}>Prestasi</option>
-                        <option value="melanjutkan_studi" {{ request('kategori') == 'melanjutkan_studi' ? 'selected' : '' }}>Melanjutkan Studi</option>
-                    </select>
-                </div>
-                <div class="form-group mr-3">
                     <label for="status" class="mr-2">Status:</label>
                     <select name="status" id="status" class="form-control">
                         <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
-                        <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
+                        <option value="Draft" {{ request('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
+                        <option value="Published" {{ request('status') == 'Published' ? 'selected' : '' }}>Published</option>
                     </select>
                 </div>
                 <div class="form-group mr-3">
@@ -68,11 +57,9 @@
                             <th>Foto</th>
                             <th>Judul</th>
                             <th>Alumni</th>
-                            <th>Kategori</th>
+                            <th>Pencapaian</th>
+                            <th>Tahun</th>
                             <th>Status</th>
-                            <th>Featured</th>
-                            <th>Views</th>
-                            <th>Tanggal Publish</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -81,37 +68,23 @@
                         <tr>
                             <td>{{ $loop->iteration + ($kisahSukses->currentPage() - 1) * $kisahSukses->perPage() }}</td>
                             <td>
-                                @if($item->foto_utama)
-                                <img src="{{ Storage::url($item->foto_utama) }}" alt="{{ $item->judul }}" style="width: 60px; height: 60px; object-fit: cover;">
+                                @if($item->foto)
+                                <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->judul }}" style="width: 60px; height: 60px; object-fit: cover;">
                                 @else
                                 <span class="text-muted">No Image</span>
                                 @endif
                             </td>
                             <td>{{ Str::limit($item->judul, 50) }}</td>
-                            <td>{{ $item->mahasiswa->nama ?? '-' }}</td>
+                            <td>{{ $item->mahasiswa->nama ?? '-' }}<br><small class="text-muted">{{ $item->nim }}</small></td>
+                            <td>{{ $item->pencapaian ?? '-' }}</td>
+                            <td>{{ $item->tahun_pencapaian ?? '-' }}</td>
                             <td>
-                                <span class="badge badge-info">
-                                    {{ ucwords(str_replace('_', ' ', $item->kategori)) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($item->status == 'published')
+                                @if($item->status == 'Published')
                                 <span class="badge badge-success">Published</span>
-                                @elseif($item->status == 'draft')
+                                @else
                                 <span class="badge badge-warning">Draft</span>
-                                @else
-                                <span class="badge badge-secondary">Archived</span>
                                 @endif
                             </td>
-                            <td>
-                                @if($item->is_featured)
-                                <i class="fas fa-star text-warning"></i>
-                                @else
-                                <i class="far fa-star text-muted"></i>
-                                @endif
-                            </td>
-                            <td>{{ number_format($item->views) }}</td>
-                            <td>{{ date('d M Y', strtotime($item->tanggal_publish)) }}</td>
                             <td class="text-nowrap">
                                 <a href="{{ route('kisah-sukses.show', $item->id) }}" class="btn btn-info btn-sm" title="Detail">
                                     <i class="fas fa-eye"></i>
@@ -130,7 +103,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center">Tidak ada data</td>
+                            <td colspan="8" class="text-center">Tidak ada data</td>
                         </tr>
                         @endforelse
                     </tbody>

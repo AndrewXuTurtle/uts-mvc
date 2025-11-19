@@ -39,21 +39,12 @@
                     <label for="status_pekerjaan" class="mr-2">Status Pekerjaan:</label>
                     <select name="status_pekerjaan" id="status_pekerjaan" class="form-control">
                         <option value="">Semua Status</option>
-                        <option value="bekerja_full_time" {{ request('status_pekerjaan') == 'bekerja_full_time' ? 'selected' : '' }}>Bekerja Full Time</option>
-                        <option value="bekerja_part_time" {{ request('status_pekerjaan') == 'bekerja_part_time' ? 'selected' : '' }}>Bekerja Part Time</option>
-                        <option value="wiraswasta" {{ request('status_pekerjaan') == 'wiraswasta' ? 'selected' : '' }}>Wiraswasta</option>
-                        <option value="melanjutkan_studi" {{ request('status_pekerjaan') == 'melanjutkan_studi' ? 'selected' : '' }}>Melanjutkan Studi</option>
-                        <option value="tidak_bekerja" {{ request('status_pekerjaan') == 'tidak_bekerja' ? 'selected' : '' }}>Tidak Bekerja</option>
-                        <option value="freelance" {{ request('status_pekerjaan') == 'freelance' ? 'selected' : '' }}>Freelance</option>
-                    </select>
-                </div>
-                <div class="form-group mr-3">
-                    <label for="status_survey" class="mr-2">Status Survey:</label>
-                    <select name="status_survey" id="status_survey" class="form-control">
-                        <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status_survey') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="completed" {{ request('status_survey') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="verified" {{ request('status_survey') == 'verified' ? 'selected' : '' }}>Verified</option>
+                        <option value="Bekerja Full Time" {{ request('status_pekerjaan') == 'Bekerja Full Time' ? 'selected' : '' }}>Bekerja Full Time</option>
+                        <option value="Bekerja Part Time" {{ request('status_pekerjaan') == 'Bekerja Part Time' ? 'selected' : '' }}>Bekerja Part Time</option>
+                        <option value="Wiraswasta" {{ request('status_pekerjaan') == 'Wiraswasta' ? 'selected' : '' }}>Wiraswasta</option>
+                        <option value="Melanjutkan Studi" {{ request('status_pekerjaan') == 'Melanjutkan Studi' ? 'selected' : '' }}>Melanjutkan Studi</option>
+                        <option value="Belum Bekerja" {{ request('status_pekerjaan') == 'Belum Bekerja' ? 'selected' : '' }}>Belum Bekerja</option>
+                        <option value="Freelancer" {{ request('status_pekerjaan') == 'Freelancer' ? 'selected' : '' }}>Freelancer</option>
                     </select>
                 </div>
                 <div class="form-group mr-3">
@@ -82,8 +73,6 @@
                             <th>Perusahaan</th>
                             <th>Posisi</th>
                             <th>Gaji</th>
-                            <th>Status Survey</th>
-                            <th>Tanggal Survey</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -92,34 +81,22 @@
                         <tr>
                             <td>{{ $loop->iteration + ($tracerStudy->currentPage() - 1) * $tracerStudy->perPage() }}</td>
                             <td>
-                                <strong>{{ $item->alumni->nama ?? '-' }}</strong><br>
-                                <small class="text-muted">{{ $item->alumni->nim ?? '-' }}</small>
+                                <strong>{{ $item->alumni->mahasiswa->nama ?? '-' }}</strong><br>
+                                <small class="text-muted">{{ $item->nim }}</small>
                             </td>
                             <td>{{ $item->tahun_survey }}</td>
                             <td>
-                                <span class="badge badge-info">
-                                    {{ ucwords(str_replace('_', ' ', $item->status_pekerjaan)) }}
-                                </span>
+                                <span class="badge badge-info">{{ $item->status_pekerjaan }}</span>
                             </td>
                             <td>{{ $item->nama_perusahaan ?? '-' }}</td>
-                            <td>{{ $item->posisi_pekerjaan ?? '-' }}</td>
+                            <td>{{ $item->posisi ?? '-' }}</td>
                             <td>
-                                @if($item->gaji_sekarang)
-                                Rp {{ number_format($item->gaji_sekarang, 0, ',', '.') }}
+                                @if($item->gaji)
+                                Rp {{ number_format($item->gaji, 0, ',', '.') }}
                                 @else
                                 -
                                 @endif
                             </td>
-                            <td>
-                                @if($item->status_survey == 'verified')
-                                <span class="badge badge-success">Verified</span>
-                                @elseif($item->status_survey == 'completed')
-                                <span class="badge badge-info">Completed</span>
-                                @else
-                                <span class="badge badge-warning">Draft</span>
-                                @endif
-                            </td>
-                            <td>{{ date('d M Y', strtotime($item->tanggal_survey)) }}</td>
                             <td class="text-nowrap">
                                 <a href="{{ route('tracer-study.show', $item->id) }}" class="btn btn-info btn-sm" title="Detail">
                                     <i class="fas fa-eye"></i>
@@ -138,7 +115,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center">Tidak ada data</td>
+                            <td colspan="8" class="text-center">Tidak ada data</td>
                         </tr>
                         @endforelse
                     </tbody>

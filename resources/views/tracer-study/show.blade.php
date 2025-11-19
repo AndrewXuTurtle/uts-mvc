@@ -23,21 +23,21 @@
                     <h6 class="m-0 font-weight-bold text-primary">Informasi Alumni</h6>
                 </div>
                 <div class="card-body">
-                    @if($tracerStudy->alumni)
+                    @if($tracerStudy->alumni && $tracerStudy->alumni->mahasiswa)
                     <div class="text-center mb-3">
-                        @if($tracerStudy->alumni->foto)
-                        <img src="{{ Storage::url($tracerStudy->alumni->foto) }}" alt="{{ $tracerStudy->alumni->nama }}" 
+                        @if($tracerStudy->alumni->mahasiswa->foto)
+                        <img src="{{ Storage::url($tracerStudy->alumni->mahasiswa->foto) }}" alt="{{ $tracerStudy->alumni->mahasiswa->nama }}" 
                              class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
                         @else
                         <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
                              style="width: 100px; height: 100px; font-size: 2rem;">
-                            {{ substr($tracerStudy->alumni->nama, 0, 1) }}
+                            {{ substr($tracerStudy->alumni->mahasiswa->nama, 0, 1) }}
                         </div>
                         @endif
                     </div>
-                    <h5 class="text-center">{{ $tracerStudy->alumni->nama }}</h5>
-                    <p class="text-center text-muted mb-1">NIM: {{ $tracerStudy->alumni->nim }}</p>
-                    <p class="text-center text-muted">Lulus: {{ $tracerStudy->alumni->tahun_lulus }}</p>
+                    <h5 class="text-center">{{ $tracerStudy->alumni->mahasiswa->nama }}</h5>
+                    <p class="text-center text-muted mb-1">NIM: {{ $tracerStudy->nim }}</p>
+                    <p class="text-center text-muted">Tahun Lulus: {{ $tracerStudy->alumni->tahun_lulus ?? '-' }}</p>
                     @else
                     <p class="text-muted">Data alumni tidak tersedia</p>
                     @endif
@@ -46,21 +46,12 @@
 
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Status Survey</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Info Survey</h6>
                 </div>
                 <div class="card-body">
                     <p><strong>Tahun Survey:</strong> {{ $tracerStudy->tahun_survey }}</p>
-                    <p><strong>Tanggal:</strong> {{ date('d M Y', strtotime($tracerStudy->tanggal_survey)) }}</p>
-                    <p><strong>Bulan Sejak Lulus:</strong> {{ $tracerStudy->bulan_sejak_lulus }} bulan</p>
-                    <p><strong>Status:</strong> 
-                        @if($tracerStudy->status_survey == 'verified')
-                        <span class="badge badge-success">Verified</span>
-                        @elseif($tracerStudy->status_survey == 'completed')
-                        <span class="badge badge-info">Completed</span>
-                        @else
-                        <span class="badge badge-warning">Draft</span>
-                        @endif
-                    </p>
+                    <p class="mb-0"><strong>Status Pekerjaan:</strong><br>
+                    <span class="badge badge-info mt-1">{{ $tracerStudy->status_pekerjaan }}</span></p>
                 </div>
             </div>
         </div>
@@ -74,128 +65,93 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Status Pekerjaan:</strong><br>
-                            <span class="badge badge-info mt-1">{{ ucwords(str_replace('_', ' ', $tracerStudy->status_pekerjaan)) }}</span></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Waktu Tunggu Kerja:</strong><br>{{ $tracerStudy->waktu_tunggu_kerja ? ucwords(str_replace('_', ' ', $tracerStudy->waktu_tunggu_kerja)) : '-' }}</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
                         <div class="col-md-4">
-                            <p><strong>Perusahaan:</strong><br>{{ $tracerStudy->nama_perusahaan ?? '-' }}</p>
+                            <p><strong>Nama Perusahaan</strong><br>{{ $tracerStudy->nama_perusahaan ?? '-' }}</p>
                         </div>
                         <div class="col-md-4">
-                            <p><strong>Posisi:</strong><br>{{ $tracerStudy->posisi_pekerjaan ?? '-' }}</p>
+                            <p><strong>Posisi/Jabatan</strong><br>{{ $tracerStudy->posisi ?? '-' }}</p>
                         </div>
                         <div class="col-md-4">
-                            <p><strong>Bidang:</strong><br>{{ $tracerStudy->bidang_pekerjaan ?? '-' }}</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Tingkat Pendidikan:</strong><br>{{ $tracerStudy->tingkat_pendidikan_pekerjaan ? strtoupper($tracerStudy->tingkat_pendidikan_pekerjaan) : '-' }}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Gaji Pertama:</strong><br>{{ $tracerStudy->gaji_pertama ? 'Rp ' . number_format($tracerStudy->gaji_pertama, 0, ',', '.') : '-' }}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Gaji Sekarang:</strong><br>{{ $tracerStudy->gaji_sekarang ? 'Rp ' . number_format($tracerStudy->gaji_sekarang, 0, ',', '.') : '-' }}</p>
+                            <p><strong>Bidang Pekerjaan</strong><br>{{ $tracerStudy->bidang_pekerjaan ?? '-' }}</p>
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Kesesuaian Pekerjaan:</strong><br>{{ $tracerStudy->kesesuaian_pekerjaan ? ucwords(str_replace('_', ' ', $tracerStudy->kesesuaian_pekerjaan)) : '-' }}</p>
+                            <p><strong>Gaji</strong><br>
+                            {{ $tracerStudy->gaji ? 'Rp ' . number_format($tracerStudy->gaji, 0, ',', '.') : '-' }}
+                            </p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Cara Dapat Kerja:</strong><br>{{ $tracerStudy->cara_dapat_kerja ?? '-' }}</p>
+                            <p><strong>Waktu Tunggu Kerja</strong><br>
+                            {{ $tracerStudy->waktu_tunggu_kerja ? $tracerStudy->waktu_tunggu_kerja . ' bulan' : '-' }}
+                            </p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p><strong>Kesesuaian Bidang Studi</strong><br>
+                            @if($tracerStudy->kesesuaian_bidang_studi)
+                            <span class="badge badge-success">{{ $tracerStudy->kesesuaian_bidang_studi }}</span>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Penilaian Kompetensi -->
+            <!-- Kepuasan & Kompetensi -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Penilaian Kompetensi <small class="text-muted">(Skala 1-5)</small></h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Penilaian</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Kompetensi Teknis:</strong> {{ $tracerStudy->kompetensi_teknis ?? '-' }}/5</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Bahasa Inggris:</strong> {{ $tracerStudy->kompetensi_bahasa_inggris ?? '-' }}/5</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Komunikasi:</strong> {{ $tracerStudy->kompetensi_komunikasi ?? '-' }}/5</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Teamwork:</strong> {{ $tracerStudy->kompetensi_teamwork ?? '-' }}/5</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Problem Solving:</strong> {{ $tracerStudy->kompetensi_problem_solving ?? '-' }}/5</p>
+                        <div class="col-md-12">
+                            <p><strong>Kepuasan terhadap Prodi (Skala 1-5)</strong><br>
+                            @if($tracerStudy->kepuasan_prodi)
+                            <span class="badge badge-success" style="font-size: 1rem;">{{ $tracerStudy->kepuasan_prodi }}/5</span>
+                            @else
+                            <span class="text-muted">Belum dinilai</span>
+                            @endif
+                            </p>
                         </div>
                     </div>
-                    @if($tracerStudy->average_kompetensi)
                     <hr>
-                    <p class="mb-0"><strong>Rata-rata Kompetensi:</strong> <span class="badge badge-success">{{ number_format($tracerStudy->average_kompetensi, 2) }}/5</span></p>
+                    @if($tracerStudy->kompetensi_didapat)
+                    <div>
+                        <strong>Kompetensi yang Didapat:</strong>
+                        <div class="bg-light p-3 rounded mt-2" style="white-space: pre-line;">{{ $tracerStudy->kompetensi_didapat }}</div>
+                    </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Kepuasan terhadap Prodi -->
+            <!-- Saran -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Kepuasan terhadap Prodi <small class="text-muted">(Skala 1-5)</small></h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Saran & Masukan</h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Kurikulum:</strong> {{ $tracerStudy->kepuasan_kurikulum ?? '-' }}/5</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Dosen:</strong> {{ $tracerStudy->kepuasan_dosen ?? '-' }}/5</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Fasilitas:</strong> {{ $tracerStudy->kepuasan_fasilitas ?? '-' }}/5</p>
-                        </div>
-                    </div>
-                    @if($tracerStudy->average_kepuasan)
-                    <hr>
-                    <p class="mb-0"><strong>Rata-rata Kepuasan:</strong> <span class="badge badge-success">{{ number_format($tracerStudy->average_kepuasan, 2) }}/5</span></p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Saran dan Pesan -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Saran dan Pesan</h6>
-                </div>
-                <div class="card-body">
-                    @if($tracerStudy->saran_untuk_prodi)
+                    @if($tracerStudy->saran_prodi)
                     <div class="mb-3">
                         <strong>Saran untuk Prodi:</strong>
-                        <div class="bg-light p-3 rounded mt-2" style="white-space: pre-line;">{{ $tracerStudy->saran_untuk_prodi }}</div>
+                        <div class="bg-light p-3 rounded mt-2" style="white-space: pre-line;">{{ $tracerStudy->saran_prodi }}</div>
                     </div>
                     @endif
 
-                    @if($tracerStudy->pesan_untuk_juniors)
+                    @if($tracerStudy->saran_pengembangan)
                     <div>
-                        <strong>Pesan untuk Junior:</strong>
-                        <div class="bg-light p-3 rounded mt-2" style="white-space: pre-line;">{{ $tracerStudy->pesan_untuk_juniors }}</div>
+                        <strong>Saran Pengembangan:</strong>
+                        <div class="bg-light p-3 rounded mt-2" style="white-space: pre-line;">{{ $tracerStudy->saran_pengembangan }}</div>
                     </div>
                     @endif
 
-                    @if(!$tracerStudy->saran_untuk_prodi && !$tracerStudy->pesan_untuk_juniors)
-                    <p class="text-muted mb-0">Tidak ada saran atau pesan.</p>
+                    @if(!$tracerStudy->saran_prodi && !$tracerStudy->saran_pengembangan)
+                    <p class="text-muted mb-0">Tidak ada saran atau masukan.</p>
                     @endif
                 </div>
             </div>

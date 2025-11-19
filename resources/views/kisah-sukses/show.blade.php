@@ -20,73 +20,29 @@
         <div class="col-lg-8">
             <div class="card shadow mb-4">
                 <div class="card-body">
-                    @if($kisahSukses->foto_utama)
-                    <img src="{{ Storage::url($kisahSukses->foto_utama) }}" alt="{{ $kisahSukses->judul }}" 
+                    @if($kisahSukses->foto)
+                    <img src="{{ asset('storage/' . $kisahSukses->foto) }}" alt="{{ $kisahSukses->judul }}" 
                          class="img-fluid rounded mb-4" style="width: 100%; max-height: 400px; object-fit: cover;">
                     @endif
 
                     <h2 class="mb-3">{{ $kisahSukses->judul }}</h2>
 
                     <div class="mb-3">
-                        <span class="badge badge-info mr-2">{{ ucwords(str_replace('_', ' ', $kisahSukses->kategori)) }}</span>
-                        @if($kisahSukses->status == 'published')
+                        @if($kisahSukses->status == 'Published')
                         <span class="badge badge-success mr-2">Published</span>
-                        @elseif($kisahSukses->status == 'draft')
-                        <span class="badge badge-warning mr-2">Draft</span>
                         @else
-                        <span class="badge badge-secondary mr-2">Archived</span>
-                        @endif
-                        @if($kisahSukses->is_featured)
-                        <span class="badge badge-warning"><i class="fas fa-star"></i> Featured</span>
+                        <span class="badge badge-warning mr-2">Draft</span>
                         @endif
                     </div>
 
-                    @if($kisahSukses->quote)
-                    <blockquote class="blockquote bg-light p-3 rounded mb-4">
-                        <p class="mb-0"><i class="fas fa-quote-left mr-2"></i>{{ $kisahSukses->quote }}</p>
-                    </blockquote>
-                    @endif
+                    <div class="mb-4" style="white-space: pre-line;">{{ $kisahSukses->kisah }}</div>
 
-                    <div class="mb-4" style="white-space: pre-line;">{{ $kisahSukses->cerita }}</div>
-
-                    @if($kisahSukses->video_url)
-                    <div class="mb-4">
-                        <h5>Video</h5>
-                        <div class="embed-responsive embed-responsive-16by9">
-                            @php
-                                $videoUrl = $kisahSukses->video_url;
-                                if (strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false) {
-                                    preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\&\?\/]+)/', $videoUrl, $matches);
-                                    $videoId = $matches[1] ?? '';
-                                    $embedUrl = "https://www.youtube.com/embed/{$videoId}";
-                                } else {
-                                    $embedUrl = $videoUrl;
-                                }
-                            @endphp
-                            <iframe class="embed-responsive-item" src="{{ $embedUrl }}" allowfullscreen></iframe>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($kisahSukses->galeri_foto && count($kisahSukses->galeri_foto) > 0)
-                    <div class="mb-4">
-                        <h5>Galeri Foto</h5>
-                        <div class="row">
-                            @foreach($kisahSukses->galeri_foto as $foto)
-                            <div class="col-md-4 mb-3">
-                                <img src="{{ Storage::url($foto) }}" alt="Galeri" class="img-fluid rounded" style="width: 100%; height: 200px; object-fit: cover;">
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($kisahSukses->tags && count($kisahSukses->tags) > 0)
-                    <div class="mb-3">
-                        <strong>Tags:</strong>
-                        @foreach($kisahSukses->tags as $tag)
-                        <span class="badge badge-secondary">{{ $tag }}</span>
-                        @endforeach
+                    @if($kisahSukses->pencapaian)
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-trophy mr-2"></i>Pencapaian:</strong> {{ $kisahSukses->pencapaian }}
+                        @if($kisahSukses->tahun_pencapaian)
+                        <span class="float-right">{{ $kisahSukses->tahun_pencapaian }}</span>
+                        @endif
                     </div>
                     @endif
                 </div>
@@ -137,15 +93,26 @@
                 </div>
             </div>
 
-            <!-- Statistics -->
+            <!-- Info -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Statistik</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi</h6>
                 </div>
                 <div class="card-body">
-                    <p class="mb-2"><i class="fas fa-eye mr-2"></i><strong>Views:</strong> {{ number_format($kisahSukses->views) }}</p>
-                    <p class="mb-2"><i class="fas fa-calendar mr-2"></i><strong>Publish:</strong> {{ date('d M Y', strtotime($kisahSukses->tanggal_publish)) }}</p>
-                    <p class="mb-0"><i class="fas fa-clock mr-2"></i><strong>Dibuat:</strong> {{ $kisahSukses->created_at->format('d M Y H:i') }}</p>
+                    <p class="mb-2"><strong>Status:</strong> 
+                        @if($kisahSukses->status == 'Published')
+                        <span class="badge badge-success">Published</span>
+                        @else
+                        <span class="badge badge-warning">Draft</span>
+                        @endif
+                    </p>
+                    @if($kisahSukses->pencapaian)
+                    <p class="mb-2"><strong>Pencapaian:</strong> {{ $kisahSukses->pencapaian }}</p>
+                    @endif
+                    @if($kisahSukses->tahun_pencapaian)
+                    <p class="mb-2"><strong>Tahun:</strong> {{ $kisahSukses->tahun_pencapaian }}</p>
+                    @endif
+                    <p class="mb-0"><strong>Dibuat:</strong> {{ $kisahSukses->created_at->format('d M Y H:i') }}</p>
                 </div>
             </div>
         </div>
