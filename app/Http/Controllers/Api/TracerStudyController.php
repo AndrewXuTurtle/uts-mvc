@@ -15,8 +15,8 @@ class TracerStudyController extends Controller
      */
     public function index(Request $request)
     {
-        // Eager load mahasiswa to get nama, email, prodi
-        $query = TracerStudy::with('mahasiswa');
+        // Eager load alumni and mahasiswa relationships
+        $query = TracerStudy::with('alumni.mahasiswa');
 
         // Filter by tahun survey
         if ($request->filled('tahun_survey')) {
@@ -28,6 +28,39 @@ class TracerStudyController extends Controller
             $query->where('status_pekerjaan', $request->status_pekerjaan);
         }
 
+        // Filter by kesesuaian bidang studi
+        if ($request->filled('kesesuaian_bidang_studi')) {
+            $query->where('kesesuaian_bidang_studi', $request->kesesuaian_bidang_studi);
+        }
+
+        // Filter by range waktu tunggu kerja (in months)
+        if ($request->filled('waktu_tunggu_min')) {
+            $query->where('waktu_tunggu_kerja', '>=', $request->waktu_tunggu_min);
+        }
+        if ($request->filled('waktu_tunggu_max')) {
+            $query->where('waktu_tunggu_kerja', '<=', $request->waktu_tunggu_max);
+        }
+
+        // Filter by gaji range
+        if ($request->filled('gaji_min')) {
+            $query->where('gaji', '>=', $request->gaji_min);
+        }
+        if ($request->filled('gaji_max')) {
+            $query->where('gaji', '<=', $request->gaji_max);
+        }
+
+        // Search by alumni name or company
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_perusahaan', 'like', "%{$search}%")
+                  ->orWhere('posisi', 'like', "%{$search}%")
+                  ->orWhereHas('alumni.mahasiswa', function($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
         // Sorting
         $sortBy = $request->get('sort_by', 'tahun_survey');
         $sortOrder = $request->get('sort_order', 'desc');
@@ -36,19 +69,22 @@ class TracerStudyController extends Controller
         $perPage = $request->get('per_page', 15);
         $tracerStudy = $query->paginate($perPage);
 
-        // Transform response to include flattened mahasiswa data
+        // Transform response to include complete data with alumni info
         $tracerStudy->getCollection()->transform(function($item) {
             return [
                 'id' => $item->id,
                 'nim' => $item->nim,
-                // Flatten mahasiswa data
-                'mahasiswa' => [
+                // Alumni and mahasiswa data
+                'alumni' => [
                     'nim' => $item->nim,
-                    'nama' => $item->mahasiswa->nama ?? 'N/A',
-                    'email' => $item->mahasiswa->email ?? null,
-                    'prodi' => $item->mahasiswa->prodi ?? null,
+                    'nama' => $item->alumni->mahasiswa->nama ?? 'N/A',
+                    'email' => $item->alumni->mahasiswa->email ?? null,
+                    'prodi' => $item->alumni->mahasiswa->prodi ?? null,
+                    'tahun_lulus' => $item->alumni->tahun_lulus ?? null,
+                    'foto' => $item->alumni->mahasiswa->foto ?? null,
+                    'foto_url' => $item->alumni->mahasiswa->foto ? url('storage/' . $item->alumni->mahasiswa->foto) : null,
                 ],
-                // Tracer study fields from actual database
+                // All tracer study fields (13 actual database fields)
                 'tahun_survey' => $item->tahun_survey,
                 'status_pekerjaan' => $item->status_pekerjaan,
                 'nama_perusahaan' => $item->nama_perusahaan,
@@ -79,31 +115,19 @@ class TracerStudyController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'alumni_id' => 'required|exists:alumni,id',
+            'nim' => 'required|exists:alumni,nim',
             'tahun_survey' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'bulan_sejak_lulus' => 'required|integer|min:0',
-            'status_pekerjaan' => 'required|in:bekerja_full_time,bekerja_part_time,wiraswasta,melanjutkan_studi,tidak_bekerja,freelance',
+            'status_pekerjaan' => 'required|in:Bekerja Full Time,Bekerja Part Time,Wiraswasta,Melanjutkan Studi,Belum Bekerja,Freelancer',
             'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi_pekerjaan' => 'nullable|string|max:255',
+            'posisi' => 'nullable|string|max:255',
             'bidang_pekerjaan' => 'nullable|string|max:255',
-            'tingkat_pendidikan_pekerjaan' => 'nullable|in:D3,S1,S2,S3,tidak_perlu',
-            'gaji_pertama' => 'nullable|numeric|min:0',
-            'gaji_sekarang' => 'nullable|numeric|min:0',
-            'kesesuaian_pekerjaan' => 'nullable|in:sangat_sesuai,sesuai,cukup_sesuai,kurang_sesuai,tidak_sesuai',
-            'waktu_tunggu_kerja' => 'nullable|in:kurang_3_bulan,3_6_bulan,6_12_bulan,lebih_12_bulan,belum_bekerja',
-            'cara_dapat_kerja' => 'nullable|string|max:255',
-            'kompetensi_teknis' => 'nullable|integer|min:1|max:5',
-            'kompetensi_bahasa_inggris' => 'nullable|integer|min:1|max:5',
-            'kompetensi_komunikasi' => 'nullable|integer|min:1|max:5',
-            'kompetensi_teamwork' => 'nullable|integer|min:1|max:5',
-            'kompetensi_problem_solving' => 'nullable|integer|min:1|max:5',
-            'kepuasan_kurikulum' => 'nullable|integer|min:1|max:5',
-            'kepuasan_dosen' => 'nullable|integer|min:1|max:5',
-            'kepuasan_fasilitas' => 'nullable|integer|min:1|max:5',
-            'saran_untuk_prodi' => 'nullable|string',
-            'pesan_untuk_juniors' => 'nullable|string',
-            'tanggal_survey' => 'required|date',
-            'status_survey' => 'required|in:draft,completed,verified',
+            'gaji' => 'nullable|numeric|min:0',
+            'waktu_tunggu_kerja' => 'nullable|integer|min:0',
+            'kesesuaian_bidang_studi' => 'nullable|in:Sangat Sesuai,Sesuai,Cukup Sesuai,Kurang Sesuai,Tidak Sesuai',
+            'kepuasan_prodi' => 'nullable|integer|min:1|max:5',
+            'saran_prodi' => 'nullable|string',
+            'kompetensi_didapat' => 'nullable|string',
+            'saran_pengembangan' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -115,7 +139,7 @@ class TracerStudyController extends Controller
         }
 
         $tracerStudy = TracerStudy::create($request->all());
-        $tracerStudy->load('alumni');
+        $tracerStudy->load('alumni.mahasiswa');
 
         return response()->json([
             'success' => true,
@@ -134,46 +158,30 @@ class TracerStudyController extends Controller
         $data = [
             'id' => $tracerStudy->id,
             'nim' => $tracerStudy->nim,
-            // Flatten alumni + mahasiswa data
+            // Complete alumni + mahasiswa data
             'alumni' => [
-                'nim' => $tracerStudy->alumni->nim ?? null,
+                'nim' => $tracerStudy->nim,
                 'nama' => $tracerStudy->alumni->mahasiswa->nama ?? 'N/A',
                 'email' => $tracerStudy->alumni->mahasiswa->email ?? null,
                 'prodi' => $tracerStudy->alumni->mahasiswa->prodi ?? null,
-                'tahun_lulus' => $tracerStudy->alumni->mahasiswa->tahun_lulus ?? null,
+                'tahun_lulus' => $tracerStudy->alumni->tahun_lulus ?? null,
                 'kelas' => $tracerStudy->alumni->mahasiswa->kelas ?? null,
-                'foto_alumni' => $tracerStudy->alumni->foto_alumni,
-                'foto_url' => $tracerStudy->alumni->foto_alumni ? asset('storage/' . $tracerStudy->alumni->foto_alumni) : null,
-                // Alumni-specific data
-                'pekerjaan_saat_ini' => $tracerStudy->alumni->pekerjaan_saat_ini,
-                'nama_perusahaan' => $tracerStudy->alumni->nama_perusahaan,
-                'posisi_jabatan' => $tracerStudy->alumni->posisi_jabatan,
+                'foto' => $tracerStudy->alumni->mahasiswa->foto ?? null,
+                'foto_url' => $tracerStudy->alumni->mahasiswa->foto ? url('storage/' . $tracerStudy->alumni->mahasiswa->foto) : null,
             ],
-            // All tracer study fields
+            // All 13 tracer study fields from actual database
             'tahun_survey' => $tracerStudy->tahun_survey,
-            'bulan_sejak_lulus' => $tracerStudy->bulan_sejak_lulus,
             'status_pekerjaan' => $tracerStudy->status_pekerjaan,
             'nama_perusahaan' => $tracerStudy->nama_perusahaan,
-            'posisi_pekerjaan' => $tracerStudy->posisi_pekerjaan,
+            'posisi' => $tracerStudy->posisi,
             'bidang_pekerjaan' => $tracerStudy->bidang_pekerjaan,
-            'tingkat_pendidikan_pekerjaan' => $tracerStudy->tingkat_pendidikan_pekerjaan,
-            'gaji_pertama' => $tracerStudy->gaji_pertama,
-            'gaji_sekarang' => $tracerStudy->gaji_sekarang,
-            'kesesuaian_pekerjaan' => $tracerStudy->kesesuaian_pekerjaan,
+            'gaji' => $tracerStudy->gaji,
             'waktu_tunggu_kerja' => $tracerStudy->waktu_tunggu_kerja,
-            'cara_dapat_kerja' => $tracerStudy->cara_dapat_kerja,
-            'kompetensi_teknis' => $tracerStudy->kompetensi_teknis,
-            'kompetensi_bahasa_inggris' => $tracerStudy->kompetensi_bahasa_inggris,
-            'kompetensi_komunikasi' => $tracerStudy->kompetensi_komunikasi,
-            'kompetensi_teamwork' => $tracerStudy->kompetensi_teamwork,
-            'kompetensi_problem_solving' => $tracerStudy->kompetensi_problem_solving,
-            'kepuasan_kurikulum' => $tracerStudy->kepuasan_kurikulum,
-            'kepuasan_dosen' => $tracerStudy->kepuasan_dosen,
-            'kepuasan_fasilitas' => $tracerStudy->kepuasan_fasilitas,
-            'saran_untuk_prodi' => $tracerStudy->saran_untuk_prodi,
-            'pesan_untuk_juniors' => $tracerStudy->pesan_untuk_juniors,
-            'tanggal_survey' => $tracerStudy->tanggal_survey,
-            'status_survey' => $tracerStudy->status_survey,
+            'kesesuaian_bidang_studi' => $tracerStudy->kesesuaian_bidang_studi,
+            'kepuasan_prodi' => $tracerStudy->kepuasan_prodi,
+            'saran_prodi' => $tracerStudy->saran_prodi,
+            'kompetensi_didapat' => $tracerStudy->kompetensi_didapat,
+            'saran_pengembangan' => $tracerStudy->saran_pengembangan,
             'created_at' => $tracerStudy->created_at,
             'updated_at' => $tracerStudy->updated_at,
         ];
@@ -193,31 +201,19 @@ class TracerStudyController extends Controller
         $tracerStudy = TracerStudy::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'alumni_id' => 'required|exists:alumni,id',
+            'nim' => 'required|exists:alumni,nim',
             'tahun_survey' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'bulan_sejak_lulus' => 'required|integer|min:0',
-            'status_pekerjaan' => 'required|in:bekerja_full_time,bekerja_part_time,wiraswasta,melanjutkan_studi,tidak_bekerja,freelance',
+            'status_pekerjaan' => 'required|in:Bekerja Full Time,Bekerja Part Time,Wiraswasta,Melanjutkan Studi,Belum Bekerja,Freelancer',
             'nama_perusahaan' => 'nullable|string|max:255',
-            'posisi_pekerjaan' => 'nullable|string|max:255',
+            'posisi' => 'nullable|string|max:255',
             'bidang_pekerjaan' => 'nullable|string|max:255',
-            'tingkat_pendidikan_pekerjaan' => 'nullable|in:D3,S1,S2,S3,tidak_perlu',
-            'gaji_pertama' => 'nullable|numeric|min:0',
-            'gaji_sekarang' => 'nullable|numeric|min:0',
-            'kesesuaian_pekerjaan' => 'nullable|in:sangat_sesuai,sesuai,cukup_sesuai,kurang_sesuai,tidak_sesuai',
-            'waktu_tunggu_kerja' => 'nullable|in:kurang_3_bulan,3_6_bulan,6_12_bulan,lebih_12_bulan,belum_bekerja',
-            'cara_dapat_kerja' => 'nullable|string|max:255',
-            'kompetensi_teknis' => 'nullable|integer|min:1|max:5',
-            'kompetensi_bahasa_inggris' => 'nullable|integer|min:1|max:5',
-            'kompetensi_komunikasi' => 'nullable|integer|min:1|max:5',
-            'kompetensi_teamwork' => 'nullable|integer|min:1|max:5',
-            'kompetensi_problem_solving' => 'nullable|integer|min:1|max:5',
-            'kepuasan_kurikulum' => 'nullable|integer|min:1|max:5',
-            'kepuasan_dosen' => 'nullable|integer|min:1|max:5',
-            'kepuasan_fasilitas' => 'nullable|integer|min:1|max:5',
-            'saran_untuk_prodi' => 'nullable|string',
-            'pesan_untuk_juniors' => 'nullable|string',
-            'tanggal_survey' => 'required|date',
-            'status_survey' => 'required|in:draft,completed,verified',
+            'gaji' => 'nullable|numeric|min:0',
+            'waktu_tunggu_kerja' => 'nullable|integer|min:0',
+            'kesesuaian_bidang_studi' => 'nullable|in:Sangat Sesuai,Sesuai,Cukup Sesuai,Kurang Sesuai,Tidak Sesuai',
+            'kepuasan_prodi' => 'nullable|integer|min:1|max:5',
+            'saran_prodi' => 'nullable|string',
+            'kompetensi_didapat' => 'nullable|string',
+            'saran_pengembangan' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -229,7 +225,7 @@ class TracerStudyController extends Controller
         }
 
         $tracerStudy->update($request->all());
-        $tracerStudy->load('alumni');
+        $tracerStudy->load('alumni.mahasiswa');
 
         return response()->json([
             'success' => true,
@@ -258,18 +254,16 @@ class TracerStudyController extends Controller
     public function statistics(Request $request)
     {
         // If no tahun_survey specified, auto-detect latest survey year from database
-        // This prevents returning empty stats when current year has no data yet
         $tahunSurvey = $request->get('tahun_survey');
         
         if (!$tahunSurvey) {
-            // Get the latest survey year from the database
             $latestYear = TracerStudy::max('tahun_survey');
-            $tahunSurvey = $latestYear ?? date('Y'); // Fallback to current year if no data
+            $tahunSurvey = $latestYear ?? date('Y');
         }
 
         $query = TracerStudy::where('tahun_survey', $tahunSurvey);
 
-        // Calculate averages and format as clean numbers
+        // Calculate averages
         $avgGaji = TracerStudy::where('tahun_survey', $tahunSurvey)
             ->whereNotNull('gaji')
             ->avg('gaji');
@@ -277,6 +271,10 @@ class TracerStudyController extends Controller
         $avgKepuasanProdi = TracerStudy::where('tahun_survey', $tahunSurvey)
             ->whereNotNull('kepuasan_prodi')
             ->avg('kepuasan_prodi');
+        
+        $avgWaktuTunggu = TracerStudy::where('tahun_survey', $tahunSurvey)
+            ->whereNotNull('waktu_tunggu_kerja')
+            ->avg('waktu_tunggu_kerja');
 
         $stats = [
             'total_respondents' => $query->count(),
@@ -287,32 +285,48 @@ class TracerStudyController extends Controller
                 ->whereNotNull('status_pekerjaan')
                 ->groupBy('status_pekerjaan')
                 ->get()
-                ->pluck('total', 'status_pekerjaan'),
+                ->mapWithKeys(function($item) {
+                    return [$item->status_pekerjaan => $item->total];
+                }),
             
-            // Waktu Tunggu Kerja
-            'waktu_tunggu_kerja' => TracerStudy::where('tahun_survey', $tahunSurvey)
-                ->whereNotNull('waktu_tunggu_kerja')
-                ->selectRaw('waktu_tunggu_kerja, COUNT(*) as total')
-                ->groupBy('waktu_tunggu_kerja')
-                ->get()
-                ->pluck('total', 'waktu_tunggu_kerja'),
+            // Waktu Tunggu Kerja Distribution (in months)
+            'waktu_tunggu_kerja_distribution' => [
+                '0-3_bulan' => TracerStudy::where('tahun_survey', $tahunSurvey)
+                    ->whereBetween('waktu_tunggu_kerja', [0, 3])->count(),
+                '4-6_bulan' => TracerStudy::where('tahun_survey', $tahunSurvey)
+                    ->whereBetween('waktu_tunggu_kerja', [4, 6])->count(),
+                '7-12_bulan' => TracerStudy::where('tahun_survey', $tahunSurvey)
+                    ->whereBetween('waktu_tunggu_kerja', [7, 12])->count(),
+                'lebih_12_bulan' => TracerStudy::where('tahun_survey', $tahunSurvey)
+                    ->where('waktu_tunggu_kerja', '>', 12)->count(),
+            ],
             
-            // Kesesuaian Bidang Studi
+            // Kesesuaian Bidang Studi Distribution
             'kesesuaian_bidang_studi' => TracerStudy::where('tahun_survey', $tahunSurvey)
                 ->whereNotNull('kesesuaian_bidang_studi')
                 ->selectRaw('kesesuaian_bidang_studi, COUNT(*) as total')
                 ->groupBy('kesesuaian_bidang_studi')
                 ->get()
-                ->pluck('total', 'kesesuaian_bidang_studi'),
+                ->mapWithKeys(function($item) {
+                    return [$item->kesesuaian_bidang_studi => $item->total];
+                }),
             
-            // Average Gaji - format as clean number (round to 2 decimals)
+            // Averages
             'avg_gaji' => $avgGaji ? round($avgGaji, 2) : null,
-            
-            // Average Kepuasan Prodi - format as clean number (round to 1 decimal)
             'avg_kepuasan_prodi' => $avgKepuasanProdi ? round($avgKepuasanProdi, 1) : null,
+            'avg_waktu_tunggu_kerja' => $avgWaktuTunggu ? round($avgWaktuTunggu, 1) : null,
             
-            // Employment Rate (yang bekerja / total)
+            // Employment Rate
             'employment_rate' => $this->calculateEmploymentRate($tahunSurvey),
+            
+            // Top 10 companies
+            'top_companies' => TracerStudy::where('tahun_survey', $tahunSurvey)
+                ->whereNotNull('nama_perusahaan')
+                ->selectRaw('nama_perusahaan, COUNT(*) as total')
+                ->groupBy('nama_perusahaan')
+                ->orderBy('total', 'desc')
+                ->limit(10)
+                ->get(),
         ];
 
         return response()->json([
@@ -332,8 +346,7 @@ class TracerStudyController extends Controller
         if ($total == 0) return 0;
 
         $employed = TracerStudy::where('tahun_survey', $tahunSurvey)
-            ->where('status_pekerjaan', '!=', 'tidak_bekerja')
-            ->whereNotNull('status_pekerjaan')
+            ->whereIn('status_pekerjaan', ['Bekerja Full Time', 'Bekerja Part Time', 'Wiraswasta', 'Freelancer'])
             ->count();
 
         return round(($employed / $total) * 100, 2);
@@ -344,24 +357,33 @@ class TracerStudyController extends Controller
      */
     public function testimonials(Request $request)
     {
-        $query = TracerStudy::with('mahasiswa')
-            ->whereNotNull('saran_prodi')
+        $query = TracerStudy::with('alumni.mahasiswa')
+            ->where(function($q) {
+                $q->whereNotNull('saran_prodi')
+                  ->orWhereNotNull('saran_pengembangan');
+            })
             ->orderBy('tahun_survey', 'desc');
 
         $testimonials = $query->paginate($request->get('per_page', 10));
 
-        // Transform to include mahasiswa data
+        // Transform to include alumni data
         $testimonials->getCollection()->transform(function($item) {
             return [
                 'id' => $item->id,
                 'nim' => $item->nim,
-                'mahasiswa' => [
-                    'nama' => $item->mahasiswa->nama ?? 'N/A',
-                    'prodi' => $item->mahasiswa->prodi ?? null,
+                'alumni' => [
+                    'nama' => $item->alumni->mahasiswa->nama ?? 'N/A',
+                    'prodi' => $item->alumni->mahasiswa->prodi ?? null,
+                    'tahun_lulus' => $item->alumni->tahun_lulus ?? null,
+                    'foto' => $item->alumni->mahasiswa->foto ?? null,
+                    'foto_url' => $item->alumni->mahasiswa->foto ? url('storage/' . $item->alumni->mahasiswa->foto) : null,
                 ],
                 'saran_prodi' => $item->saran_prodi,
+                'kompetensi_didapat' => $item->kompetensi_didapat,
                 'saran_pengembangan' => $item->saran_pengembangan,
                 'tahun_survey' => $item->tahun_survey,
+                'status_pekerjaan' => $item->status_pekerjaan,
+                'nama_perusahaan' => $item->nama_perusahaan,
             ];
         });
 

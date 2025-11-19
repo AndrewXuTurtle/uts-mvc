@@ -12,6 +12,11 @@ Route::apiResource('project', ProjectController::class);
 Route::apiResource('matakuliah', MatakuliahController::class);
 Route::apiResource('profil-prodi', ProfilProdiController::class);
 
+// Kurikulum API
+Route::apiResource('kurikulum', App\Http\Controllers\Api\KurikulumController::class);
+Route::get('kurikulum-semester/{semester}', [App\Http\Controllers\Api\KurikulumController::class, 'bySemester']);
+Route::get('kurikulum-statistics', [App\Http\Controllers\Api\KurikulumController::class, 'statistics']);
+
 // Berita API
 Route::apiResource('berita', App\Http\Controllers\Api\BeritaController::class);
 
