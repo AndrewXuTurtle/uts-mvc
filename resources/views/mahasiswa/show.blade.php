@@ -75,8 +75,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-weight-bold">Jurusan</label>
-                                <p class="mb-2">{{ $mahasiswa->jurusan }}</p>
+                                <label class="font-weight-bold">No. HP</label>
+                                <p class="mb-2">{{ $mahasiswa->no_hp ?: '-' }}</p>
                             </div>
                         </div>
                     </div>
@@ -84,10 +84,64 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-weight-bold">Angkatan</label>
-                                <p class="mb-2">{{ $mahasiswa->angkatan }}</p>
+                                <label class="font-weight-bold">Jenis Kelamin</label>
+                                <p class="mb-2">{{ $mahasiswa->jenis_kelamin ?: '-' }}</p>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Tempat, Tanggal Lahir</label>
+                                <p class="mb-2">
+                                    {{ $mahasiswa->tempat_lahir ?: '-' }}{{ $mahasiswa->tempat_lahir && $mahasiswa->tanggal_lahir ? ', ' : '' }}{{ $mahasiswa->tanggal_lahir ? $mahasiswa->tanggal_lahir->format('d M Y') : '' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Alamat</label>
+                                <p class="mb-2">{{ $mahasiswa->alamat ?: '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Program Studi</label>
+                                <p class="mb-2">{{ $mahasiswa->prodi ?: 'Teknik Perangkat Lunak' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Kelas</label>
+                                <p class="mb-2">{{ $mahasiswa->kelas ?: '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Tahun Masuk</label>
+                                <p class="mb-2">{{ $mahasiswa->tahun_masuk }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Status</label>
+                                <p class="mb-2">
+                                    <span class="badge badge-{{ $mahasiswa->getStatusBadgeColor() }}">
+                                        {{ $mahasiswa->status }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="font-weight-bold">Dibuat</label>

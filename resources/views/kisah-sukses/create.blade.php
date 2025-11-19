@@ -116,9 +116,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="cerita">Cerita <span class="text-danger">*</span></label>
-                    <textarea name="cerita" id="cerita" rows="10" class="form-control @error('cerita') is-invalid @enderror" required>{{ old('cerita') }}</textarea>
-                    @error('cerita')
+                    <label for="cerita">Kisah Sukses <span class="text-danger">*</span></label>
+                    <textarea name="kisah" id="kisah" rows="10" class="form-control @error('kisah') is-invalid @enderror" required>{{ old('kisah') }}</textarea>
+                    @error('kisah')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

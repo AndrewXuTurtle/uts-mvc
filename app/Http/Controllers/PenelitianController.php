@@ -65,7 +65,7 @@ class PenelitianController extends Controller
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|exists:tbl_dosen,id',
+            'dosen_id' => 'required|exists:dosen,id',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'status' => 'required|in:ongoing,completed,published,cancelled',
             'bidang_penelitian' => 'required|string|max:255',
@@ -120,7 +120,7 @@ class PenelitianController extends Controller
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'dosen_id' => 'required|exists:tbl_dosen,id',
+            'dosen_id' => 'required|exists:dosen,id',
             'tahun' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'status' => 'required|in:ongoing,completed,published,cancelled',
             'bidang_penelitian' => 'required|string|max:255',

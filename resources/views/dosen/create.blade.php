@@ -50,6 +50,20 @@
                         </div>
 
                         <div class="form-group mb-3">
+                            <label for="pendidikan_terakhir">Pendidikan Terakhir</label>
+                            <select class="form-control @error('pendidikan_terakhir') is-invalid @enderror" 
+                                    id="pendidikan_terakhir" name="pendidikan_terakhir" required>
+                                <option value="">-- Pilih Pendidikan --</option>
+                                <option value="S1" {{ old('pendidikan_terakhir') == 'S1' ? 'selected' : '' }}>S1</option>
+                                <option value="S2" {{ old('pendidikan_terakhir') == 'S2' ? 'selected' : '' }}>S2</option>
+                                <option value="S3" {{ old('pendidikan_terakhir') == 'S3' ? 'selected' : '' }}>S3</option>
+                            </select>
+                            @error('pendidikan_terakhir')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
                             <label for="jabatan">Jabatan</label>
                             <input type="text" class="form-control @error('jabatan') is-invalid @enderror" 
                                    id="jabatan" name="jabatan" value="{{ old('jabatan') }}" required>
@@ -63,6 +77,37 @@
                             <textarea class="form-control @error('bidang_keahlian') is-invalid @enderror" 
                                       id="bidang_keahlian" name="bidang_keahlian" rows="3">{{ old('bidang_keahlian') }}</textarea>
                             @error('bidang_keahlian')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="no_hp">No. HP</label>
+                            <input type="text" class="form-control @error('no_hp') is-invalid @enderror" 
+                                   id="no_hp" name="no_hp" value="{{ old('no_hp') }}" placeholder="Contoh: 08123456789">
+                            @error('no_hp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="jenis_kelamin">Jenis Kelamin</label>
+                            <select class="form-control @error('jenis_kelamin') is-invalid @enderror" 
+                                    id="jenis_kelamin" name="jenis_kelamin">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('jenis_kelamin')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="alamat">Alamat</label>
+                            <textarea class="form-control @error('alamat') is-invalid @enderror" 
+                                      id="alamat" name="alamat" rows="3" placeholder="Alamat lengkap">{{ old('alamat') }}</textarea>
+                            @error('alamat')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

@@ -193,39 +193,3 @@
     </div>
 </div>
 @endsection
-                                   id="path_foto_utama" name="path_foto_utama" accept="image/*">
-                            @error('path_foto_utama')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="path_foto_galeri">Foto Galeri (Multiple)</label>
-                            <input type="file" class="form-control @error('path_foto_galeri') is-invalid @enderror"
-                                   id="path_foto_galeri" name="path_foto_galeri[]" accept="image/*" multiple>
-                            @error('path_foto_galeri')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label for="keywords">Keywords</label>
-                            <input type="text" class="form-control @error('keywords') is-invalid @enderror"
-                                   id="keywords" name="keywords" value="{{ old('keywords') }}" placeholder="pisahkan dengan koma">
-                            @error('keywords')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Simpan Data
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
