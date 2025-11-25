@@ -61,6 +61,19 @@
                                     <select class="form-control @error('jenis') is-invalid @enderror"
                                             id="jenis" name="jenis" required>
                                         <option value="">-- Pilih Jenis --</option>
+                                        <option value="Kalender Akademik" {{ old('jenis') == 'Kalender Akademik' ? 'selected' : '' }}>Kalender Akademik</option>
+                                        <option value="Panduan Studi" {{ old('jenis') == 'Panduan Studi' ? 'selected' : '' }}>Panduan Studi</option>
+                                        <option value="Skripsi" {{ old('jenis') == 'Skripsi' ? 'selected' : '' }}>Skripsi</option>
+                                        <option value="Magang" {{ old('jenis') == 'Magang' ? 'selected' : '' }}>Magang</option>
+                                        <option value="Tata Tertib" {{ old('jenis') == 'Tata Tertib' ? 'selected' : '' }}>Tata Tertib</option>
+                                        <option value="Kode Etik" {{ old('jenis') == 'Kode Etik' ? 'selected' : '' }}>Kode Etik</option>
+                                        <option value="Kegiatan" {{ old('jenis') == 'Kegiatan' ? 'selected' : '' }}>Kegiatan</option>
+                                        <option value="SOP" {{ old('jenis') == 'SOP' ? 'selected' : '' }}>SOP</option>
+                                        <option value="Surat Menyurat" {{ old('jenis') == 'Surat Menyurat' ? 'selected' : '' }}>Surat Menyurat</option>
+                                        <option value="Cuti Kuliah" {{ old('jenis') == 'Cuti Kuliah' ? 'selected' : '' }}>Cuti Kuliah</option>
+                                        <option value="Biaya Kuliah" {{ old('jenis') == 'Biaya Kuliah' ? 'selected' : '' }}>Biaya Kuliah</option>
+                                        <option value="Beasiswa" {{ old('jenis') == 'Beasiswa' ? 'selected' : '' }}>Beasiswa</option>
+                                        <option value="Denda Keterlambatan" {{ old('jenis') == 'Denda Keterlambatan' ? 'selected' : '' }}>Denda Keterlambatan</option>
                                     </select>
                                     @error('jenis')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -135,40 +148,4 @@
         </div>
     </div>
 </div>
-
-<script>
-// Dynamic jenis options based on kategori
-const jenisOptions = {
-    'Akademik': ['Kalender Akademik', 'Kurikulum', 'Pedoman Akademik', 'SK Akademik'],
-    'Kemahasiswaan': ['Beasiswa', 'Organisasi Mahasiswa', 'Pedoman Kemahasiswaan'],
-    'Administratif': ['Surat Keputusan', 'Surat Edaran', 'Formulir', 'Panduan'],
-    'Keuangan': ['Biaya Kuliah', 'Beasiswa']
-};
-
-document.getElementById('kategori').addEventListener('change', function() {
-    const kategori = this.value;
-    const jenisSelect = document.getElementById('jenis');
-    
-    // Clear current options
-    jenisSelect.innerHTML = '<option value="">-- Pilih Jenis --</option>';
-    
-    // Add new options based on kategori
-    if (kategori && jenisOptions[kategori]) {
-        jenisOptions[kategori].forEach(jenis => {
-            const option = document.createElement('option');
-            option.value = jenis;
-            option.textContent = jenis;
-            jenisSelect.appendChild(option);
-        });
-    }
-});
-
-// Trigger change if there's old value
-@if(old('kategori'))
-    document.getElementById('kategori').dispatchEvent(new Event('change'));
-    @if(old('jenis'))
-        document.getElementById('jenis').value = '{{ old('jenis') }}';
-    @endif
-@endif
-</script>
 @endsection

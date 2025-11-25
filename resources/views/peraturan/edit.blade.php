@@ -62,6 +62,19 @@
                                     <select class="form-control @error('jenis') is-invalid @enderror"
                                             id="jenis" name="jenis" required>
                                         <option value="">-- Pilih Jenis --</option>
+                                        <option value="Kalender Akademik" {{ old('jenis', $peraturan->jenis) == 'Kalender Akademik' ? 'selected' : '' }}>Kalender Akademik</option>
+                                        <option value="Panduan Studi" {{ old('jenis', $peraturan->jenis) == 'Panduan Studi' ? 'selected' : '' }}>Panduan Studi</option>
+                                        <option value="Skripsi" {{ old('jenis', $peraturan->jenis) == 'Skripsi' ? 'selected' : '' }}>Skripsi</option>
+                                        <option value="Magang" {{ old('jenis', $peraturan->jenis) == 'Magang' ? 'selected' : '' }}>Magang</option>
+                                        <option value="Tata Tertib" {{ old('jenis', $peraturan->jenis) == 'Tata Tertib' ? 'selected' : '' }}>Tata Tertib</option>
+                                        <option value="Kode Etik" {{ old('jenis', $peraturan->jenis) == 'Kode Etik' ? 'selected' : '' }}>Kode Etik</option>
+                                        <option value="Kegiatan" {{ old('jenis', $peraturan->jenis) == 'Kegiatan' ? 'selected' : '' }}>Kegiatan</option>
+                                        <option value="SOP" {{ old('jenis', $peraturan->jenis) == 'SOP' ? 'selected' : '' }}>SOP</option>
+                                        <option value="Surat Menyurat" {{ old('jenis', $peraturan->jenis) == 'Surat Menyurat' ? 'selected' : '' }}>Surat Menyurat</option>
+                                        <option value="Cuti Kuliah" {{ old('jenis', $peraturan->jenis) == 'Cuti Kuliah' ? 'selected' : '' }}>Cuti Kuliah</option>
+                                        <option value="Biaya Kuliah" {{ old('jenis', $peraturan->jenis) == 'Biaya Kuliah' ? 'selected' : '' }}>Biaya Kuliah</option>
+                                        <option value="Beasiswa" {{ old('jenis', $peraturan->jenis) == 'Beasiswa' ? 'selected' : '' }}>Beasiswa</option>
+                                        <option value="Denda Keterlambatan" {{ old('jenis', $peraturan->jenis) == 'Denda Keterlambatan' ? 'selected' : '' }}>Denda Keterlambatan</option>
                                     </select>
                                     @error('jenis')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -177,56 +190,4 @@
         </div>
     </div>
 </div>
-
-<script>
-// Dynamic jenis options based on kategori
-const jenisOptions = {
-    'Akademik': ['Kalender Akademik', 'Kurikulum', 'Pedoman Akademik', 'SK Akademik'],
-    'Kemahasiswaan': ['Beasiswa', 'Organisasi Mahasiswa', 'Pedoman Kemahasiswaan'],
-    'Administratif': ['Surat Keputusan', 'Surat Edaran', 'Formulir', 'Panduan'],
-    'Keuangan': ['Biaya Kuliah', 'Beasiswa']
-};
-
-document.getElementById('kategori').addEventListener('change', function() {
-    const kategori = this.value;
-    const jenisSelect = document.getElementById('jenis');
-    const currentJenis = jenisSelect.value; // Save current selection
-    
-    // Clear current options
-    jenisSelect.innerHTML = '<option value="">-- Pilih Jenis --</option>';
-    
-    // Add new options based on kategori
-    if (kategori && jenisOptions[kategori]) {
-        jenisOptions[kategori].forEach(jenis => {
-            const option = document.createElement('option');
-            option.value = jenis;
-            option.textContent = jenis;
-            if (jenis === currentJenis) {
-                option.selected = true;
-            }
-            jenisSelect.appendChild(option);
-        });
-    }
-});
-
-// Trigger change on page load to populate jenis dropdown
-document.addEventListener('DOMContentLoaded', function() {
-    const kategoriSelect = document.getElementById('kategori');
-    const jenisSelect = document.getElementById('jenis');
-    
-    // Store the initial jenis value
-    const initialJenis = '{{ old('jenis', $peraturan->jenis) }}';
-    
-    // Trigger kategori change to populate jenis options
-    if (kategoriSelect.value) {
-        const event = new Event('change');
-        kategoriSelect.dispatchEvent(event);
-        
-        // Set the jenis value after options are populated
-        setTimeout(() => {
-            jenisSelect.value = initialJenis;
-        }, 10);
-    }
-});
-</script>
 @endsection
