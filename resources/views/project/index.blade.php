@@ -89,7 +89,7 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="btn btn-danger btn-circle btn-sm"
-                                        onclick='confirmDelete("{{ route('project.destroy', $p->project_id) }}", "project {{ $p->judul_project }}")'>
+                                        onclick='confirmDelete("{{ route('project.destroy', $p) }}", "project {{ $p->judul_project }}")'>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
