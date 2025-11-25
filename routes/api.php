@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProfilProdiController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('dosen', DosenController::class);
+Route::get('dosen-statistics', [DosenController::class, 'statistics']);
 Route::apiResource('mahasiswa', App\Http\Controllers\Api\MahasiswaController::class);
 Route::apiResource('project', ProjectController::class);
 Route::apiResource('matakuliah', MatakuliahController::class);

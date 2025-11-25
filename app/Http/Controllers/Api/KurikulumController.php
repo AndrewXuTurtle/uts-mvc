@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class KurikulumController extends Controller
 {
@@ -37,13 +38,6 @@ class KurikulumController extends Controller
         $perPage = $request->get('per_page', 50);
         $kurikulum = $query->paginate($perPage);
 
-        // Add cover_foto_url if exists
-        $kurikulum->getCollection()->transform(function ($item) {
-            $data = $item->toArray();
-            $data['cover_foto_url'] = $item->cover_foto ? url('storage/' . $item->cover_foto) : null;
-            return $data;
-        });
-
         return response()->json([
             'success' => true,
             'data' => $kurikulum,
@@ -62,22 +56,14 @@ class KurikulumController extends Controller
             'semester' => 'required|integer|min:1|max:8',
             'sks' => 'required|integer|min:1|max:6',
             'deskripsi' => 'nullable|string',
-            'cover_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        if ($request->hasFile('cover_foto')) {
-            $validated['cover_foto'] = $request->file('cover_foto')->store('kurikulum', 'public');
-        }
-
         $kurikulum = Kurikulum::create($validated);
-
-        $data = $kurikulum->toArray();
-        $data['cover_foto_url'] = $kurikulum->cover_foto ? url('storage/' . $kurikulum->cover_foto) : null;
 
         return response()->json([
             'success' => true,
             'message' => 'Mata kuliah berhasil ditambahkan',
-            'data' => $data
+            'data' => $kurikulum
         ], 201);
     }
 
@@ -95,12 +81,9 @@ class KurikulumController extends Controller
             ], 404);
         }
 
-        $data = $kurikulum->toArray();
-        $data['cover_foto_url'] = $kurikulum->cover_foto ? url('storage/' . $kurikulum->cover_foto) : null;
-
         return response()->json([
             'success' => true,
-            'data' => $data,
+            'data' => $kurikulum,
             'message' => 'Detail mata kuliah berhasil diambil'
         ]);
     }
@@ -125,26 +108,14 @@ class KurikulumController extends Controller
             'semester' => 'required|integer|min:1|max:8',
             'sks' => 'required|integer|min:1|max:6',
             'deskripsi' => 'nullable|string',
-            'cover_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        if ($request->hasFile('cover_foto')) {
-            // Delete old cover_foto if exists
-            if ($kurikulum->cover_foto) {
-                \Storage::disk('public')->delete($kurikulum->cover_foto);
-            }
-            $validated['cover_foto'] = $request->file('cover_foto')->store('kurikulum', 'public');
-        }
-
         $kurikulum->update($validated);
-
-        $data = $kurikulum->toArray();
-        $data['cover_foto_url'] = $kurikulum->cover_foto ? url('storage/' . $kurikulum->cover_foto) : null;
 
         return response()->json([
             'success' => true,
             'message' => 'Mata kuliah berhasil diperbarui',
-            'data' => $data
+            'data' => $kurikulum
         ]);
     }
 
@@ -160,11 +131,6 @@ class KurikulumController extends Controller
                 'success' => false,
                 'message' => 'Mata kuliah tidak ditemukan'
             ], 404);
-        }
-
-        // Delete cover_foto if exists
-        if ($kurikulum->cover_foto) {
-            \Storage::disk('public')->delete($kurikulum->cover_foto);
         }
 
         $kurikulum->delete();
@@ -183,12 +149,6 @@ class KurikulumController extends Controller
         $kurikulum = Kurikulum::where('semester', $semester)
             ->orderBy('kode_matkul', 'asc')
             ->get();
-
-        $kurikulum->transform(function ($item) {
-            $data = $item->toArray();
-            $data['cover_foto_url'] = $item->cover_foto ? url('storage/' . $item->cover_foto) : null;
-            return $data;
-        });
 
         return response()->json([
             'success' => true,

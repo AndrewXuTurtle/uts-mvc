@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KisahSukses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class KisahSuksesController extends Controller
 {
@@ -145,7 +147,7 @@ class KisahSuksesController extends Controller
 
         // Group by year (tahun_pencapaian)
         $byYear = KisahSukses::where('status', 'Published')
-            ->select('tahun_pencapaian as year', \DB::raw('count(*) as total'))
+            ->select('tahun_pencapaian as year', DB::raw('count(*) as total'))
             ->groupBy('tahun_pencapaian')
             ->orderBy('tahun_pencapaian', 'desc')
             ->pluck('total', 'year');

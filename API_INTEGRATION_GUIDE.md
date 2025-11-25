@@ -1,666 +1,752 @@
-# API Integration Guide - UTS MVC
+# 🚀 API Integration Guide - UTS MVC System
 
-**Base URL:** `http://localhost:8000/api`
+Base URL: `http://127.0.0.1:8000/api`
 
-## Quick Reference
+---
+
+## 📋 Quick Reference
 
 All endpoints return standardized JSON:
 ```json
 {
   "success": true,
-  "data": [...] 
+  "data": {...}
 }
 ```
 
-## Core Endpoints
-
-### 1. Dosen (Lecturers)
-```bash
-# Get all dosen
-GET /api/dosen
-
-# Get single dosen
-GET /api/dosen/{id}
-
-# Search dosen
-GET /api/dosen?search=Ahmad&status=Aktif
-```
-
-**Response Fields:**
-- `id`, `nidn`, `nama`, `email`, `no_hp`
-- `jabatan`, `pendidikan_terakhir`, `bidang_keahlian`
-- `google_scholar_link`, `sinta_link`, `scopus_link`
-- `foto_url`, `status`
-
-### 2. Mahasiswa (Students)
-```bash
-# Get all mahasiswa
-GET /api/mahasiswa
-
-# Get single mahasiswa
-GET /api/mahasiswa/{id}
-
-# Filter mahasiswa
-GET /api/mahasiswa?status=Aktif&tahun_masuk=2020
-```
-
-**Response Fields:**
-- `id`, `nim`, `nama`, `email`, `no_hp`
-- `tahun_masuk`, `tahun_lulus`, `kelas`, `status`
-- `foto`, `prodi`
-
-### 3. Alumni
-```bash
-# Get all alumni
-GET /api/alumni
-
-# Search alumni
-GET /api/alumni?search=Ahmad&pekerjaan_saat_ini=Bekerja
-
-# Get alumni statistics
-GET /api/alumni-statistics
-```
-
-**Response Fields:**
-- `nim`, `nama`, `email`
-- `pekerjaan_saat_ini`, `nama_perusahaan`, `posisi_jabatan`
-- `gaji_pertama`, `gaji_saat_ini`
-- `linkedin`, `instagram`, `pesan_alumni`
-
-### 4. Berita (News)
-```bash
-# Get all berita (paginated)
-GET /api/berita
-
-# Get single berita
-GET /api/berita/{id}
-
-# Filter berita
-GET /api/berita?kategori=Event&is_prestasi=true
-```
-
-**Response Fields:**
-- `id`, `judul`, `slug`, `konten`
-- `gambar`, `gambar_url`
-- `penulis`, `tanggal_publish`, `kategori`
-- `is_prestasi`, `views`
-
-### 5. Pengumuman (Announcements)
-```bash
-# Get all pengumuman (paginated)
-GET /api/pengumuman
-
-# Filter by priority
-GET /api/pengumuman?prioritas=tinggi&aktif=true
-```
-
-**Response Fields:**
-- `id`, `judul`, `isi`
-- `gambar`, `gambar_url`
-- `penulis`, `tanggal_mulai`, `tanggal_selesai`
-- `prioritas` (tinggi/sedang/rendah), `aktif`
-
-### 6. Agenda (Events)
-```bash
-# Get upcoming agenda
-GET /api/agenda?upcoming=true&aktif=true
-
-# Filter by month
-GET /api/agenda?month=11&year=2025
-
-# Filter by kategori
-GET /api/agenda?kategori=seminar
-```
-
-**Response Fields:**
-- `id`, `judul`, `deskripsi`
-- `tanggal_mulai`, `tanggal_selesai`, `lokasi`
-- `kategori` (seminar/workshop/acara)
-- `penyelenggara`, `kontak`
-- `poster`, `gambar_url`, `aktif`
-
-### 7. Galeri (Gallery)
-```bash
-# Get all gallery (paginated)
-GET /api/galeri
-
-# Get by kategori
-GET /api/galeri-kategori/akademik
-
-# Filter featured
-GET /api/galeri?tampilkan_di_home=true
-```
-
-**Kategori:** akademik, kemahasiswaan, kegiatan, prestasi, fasilitas
-
-**Response Fields:**
-- `id`, `judul`, `deskripsi`
-- `foto`, `foto_url`
-- `kategori`, `tanggal_kegiatan`
-- `fotografer`, `tampilkan_di_home`, `urutan`
-
-### 8. Penelitian (Research)
-```bash
-# Get all penelitian
-GET /api/penelitian
-
-# Get by dosen
-GET /api/penelitian-dosen/{dosenId}
-
-# Get statistics
-GET /api/penelitian-statistics
-
-# Filter
-GET /api/penelitian?tahun=2024&status=Sedang Berjalan
-```
-
-**Response Fields:**
-- `id`, `judul_penelitian`, `deskripsi`
-- `tahun`, `jenis_penelitian`, `sumber_dana`, `dana`
-- `status`, `tanggal_mulai`, `tanggal_selesai`
-- `output`, `file_dokumen`
-- `ketua_peneliti_id`, `ketua_peneliti` (object)
-
-**⚠️ Important:** Use `judul_penelitian` (not `judul`), `dana` (not `jumlah_dana`), `ketua_peneliti_id` (not `dosen_id`)
-
-### 9. PKM (Student Community Projects)
-```bash
-# Get all PKM
-GET /api/pkm
-
-# Get by dosen
-GET /api/pkm-dosen/{dosenId}
-
-# Get by mahasiswa
-GET /api/pkm-mahasiswa/{mahasiswaId}
-
-# Get statistics
-GET /api/pkm-statistics
-
-# Filter
-GET /api/pkm?tahun=2024&jenis_pkm=PKM-KC&status=Didanai
-```
-
-**Response Fields:**
-- `id`, `judul_pkm`, `deskripsi`
-- `tahun`, `jenis_pkm` (PKM-KC/PKM-K/PKM-M/PKM-T/PKM-R)
-- `status` (Didanai/Diajukan/Selesai)
-- `dana`, `pencapaian`, `file_dokumen`
-- `dosen_pembimbing_id`, `dosen_pembimbing` (object)
-- `mahasiswa` (array)
-
-**⚠️ Important:** Use `dana` (not `biaya`)
-
-### 10. Kisah Sukses (Success Stories)
-```bash
-# Get all stories
-GET /api/kisah-sukses
-
-# Get featured stories
-GET /api/kisah-sukses-featured
-
-# Get statistics
-GET /api/kisah-sukses-statistics
-
-# Filter
-GET /api/kisah-sukses?status=Published&tahun_pencapaian=2024
-```
-
-**Response Fields (10 columns):**
-- `id`, `nim`
-- `mahasiswa` (object with nama, email)
-- `judul` - Story title
-- `kisah` - Full story text (required field)
-- `pencapaian` - Achievement description (required)
-- `tahun_pencapaian` - Year of achievement (required)
-- `foto` - Photo filename
-- `foto_url` - Full photo URL
-- `status` - Draft/Published/Archived
-
-**⚠️ Important:** 
-- Direct `mahasiswa` relationship (not through `alumni`)
-- Field `kisah` is REQUIRED (not nullable)
-- Field `pencapaian` is REQUIRED
-- Field `tahun_pencapaian` is REQUIRED
-- Use `foto` (not `foto_utama` or `galeri_foto`)
-
-**Form Fields for Create/Update:**
-```
-nim (required, exists in mahasiswa)
-judul (required, max 255)
-kisah (required, text)
-pencapaian (required, max 255)
-tahun_pencapaian (required, integer, 2000-current year)
-foto (optional, image file max 2MB)
-status (required, Draft/Published/Archived)
-```
-
-### 11. Tracer Study (Alumni Survey)
-```bash
-# Get all responses
-GET /api/tracer-study
-
-# Get statistics
-GET /api/tracer-study-statistics
-
-# Get testimonials
-GET /api/tracer-study-testimonials
-
-# Filter
-GET /api/tracer-study?tahun_survey=2024&status_pekerjaan=Bekerja Full Time
-```
-
-**Response Fields (16 columns):**
-- `id`, `nim`, `mahasiswa` (object)
-- `tahun_survey` (required)
-- `status_pekerjaan` (required) - Employment status text
-- `nama_perusahaan` (nullable)
-- `posisi` (nullable) - Job position
-- `bidang_pekerjaan` (nullable) - Field of work
-- `gaji` (nullable, numeric) - Single salary field
-- `waktu_tunggu_kerja` (nullable, integer) - Months waiting for job
-- `kesesuaian_bidang_studi` (nullable) - Field compatibility
-- `kepuasan_prodi` (nullable, 1-5) - Program satisfaction rating
-- `saran_prodi` (nullable, text) - Suggestions for program
-- `kompetensi_didapat` (nullable, text) - Competencies gained
-- `saran_pengembangan` (nullable, text) - Development suggestions
-
-**⚠️ Important:** 
-- Simplified 16-column schema (not 25+ fields)
-- No `status_survey`, `alumni.mahasiswa` chain
-- No multiple `kompetensi_*` fields (combined into `kompetensi_didapat`)
-- No separate `gaji_pertama`/`gaji_sekarang` (single `gaji` field)
-- No `kepuasan_kurikulum`/`kepuasan_dosen`/`kepuasan_fasilitas` (only `kepuasan_prodi`)
-- Direct `mahasiswa` relationship (use `exists:mahasiswa,nim`)
-
-**Form Fields for Create/Update:**
-```
-nim (required, exists in mahasiswa)
-tahun_survey (required, integer, 2000-current year)
-status_pekerjaan (required, string max 100)
-nama_perusahaan (optional, max 255)
-posisi (optional, max 255)
-bidang_pekerjaan (optional, max 255)
-gaji (optional, numeric)
-waktu_tunggu_kerja (optional, integer months)
-kesesuaian_bidang_studi (optional, string max 100)
-kepuasan_prodi (optional, integer 1-5)
-saran_prodi (optional, text)
-kompetensi_didapat (optional, text)
-saran_pengembangan (optional, text)
-```
-
-### 12. Prestasi (Achievements)
-```bash
-# Get all prestasi
-GET /api/prestasi
-
-# Get statistics
-GET /api/prestasi/statistics
-
-# Filter
-GET /api/prestasi?tingkat=Nasional&jenis=Teknologi&tahun=2024
-```
-
-**Response Fields:**
-- `id`, `nim`, `mahasiswa` (object)
-- `nama_prestasi`, `tingkat_prestasi` (Internasional/Nasional/Regional/Lokal)
-- `jenis_prestasi` (Akademik/Olahraga/Seni/Teknologi/Lainnya)
-- `penyelenggara`, `tanggal_prestasi`, `deskripsi`
-- `foto`, `sertifikat`
-
-### 13. Projects
-```bash
-# Get all projects
-GET /api/project
-
-# Get single project
-GET /api/project/{id}
-
-# Filter
-GET /api/project?tahun=2024&kategori=Web Application&status=Published
-```
-
-**Response Fields:**
-- `id`, `nim`, `mahasiswa` (object)
-- `judul_project`, `deskripsi`
-- `tahun`, `tahun_selesai`, `kategori`, `teknologi`
-- `dosen_pembimbing`
-- `link_github`, `link_demo`, `status`
-- `cover_image`, `galeri` (array)
-
-### 14. Matakuliah (Courses)
-```bash
-# Get all courses
-GET /api/matakuliah
-
-# Filter
-GET /api/matakuliah?semester=1&status_wajib=true
-```
-
-**Response Fields:**
-- `id`, `kode_mk`, `nama_mk`
-- `sks`, `semester`
-- `kurikulum_tahun`, `status_wajib`
-
-### 15. Profil Prodi (Program Profile)
-```bash
-# Get program profile (single record)
-GET /api/profil-prodi
-```
-
-**Response Fields:**
-- `id`, `nama_prodi`
-- `visi`, `misi`, `deskripsi`
-- `akreditasi`, `logo`
-- `kontak_email`, `kontak_telepon`, `alamat`
-
-### 16. Peraturan (Regulations/Documents)
-```bash
-# Get all peraturan (grouped by kategori)
-GET /api/peraturan
-
-# Get by kategori
-GET /api/peraturan-kategori/Akademik
-
-# Get single document
-GET /api/peraturan/{id}
-```
-
-**Kategori:** Akademik, Kemahasiswaan, Administratif, Keuangan
-
-**Response Fields:**
-- `id`, `judul`, `deskripsi`
-- `kategori`, `jenis`
-- `file_url`, `file_name`, `file_size_formatted`
-- `urutan`, `is_active`
+### Key Image URL Fields
+- Berita: `gambar_url`
+- Project: `cover_image_url`, `galeri_urls[]`
+- TracerStudy: `alumni.foto_url`
+- KisahSukses: `mahasiswa.foto_url`, `foto_url`
+- Alumni: `mahasiswa.foto_url`
+- Dosen: `foto_url`
 
 ---
 
-## JavaScript/React Integration
+## 📰 Berita (News)
 
-### Basic Fetch Function
-```javascript
-const API_URL = 'http://localhost:8000/api';
+### GET /api/berita
+List semua berita dengan pagination
 
-async function fetchAPI(endpoint) {
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`);
-    const json = await response.json();
-    
-    if (json.success) {
-      return json.data;
-    } else {
-      throw new Error(json.message || 'API Error');
-    }
-  } catch (error) {
-    console.error('Fetch error:', error);
-    throw error;
-  }
-}
+**Query Parameters:**
+- `exclude_prestasi` (boolean) - Exclude berita prestasi
+- `search` (string) - Cari di judul/isi
+- `tanggal_dari` (date) - YYYY-MM-DD
+- `tanggal_sampai` (date) - YYYY-MM-DD
+- `per_page` (int) - Default: 10
 
-// Usage
-const dosen = await fetchAPI('/dosen');
-const berita = await fetchAPI('/berita?kategori=Event');
-const penelitian = await fetchAPI('/penelitian-dosen/1');
-```
-
-### React Hook Example
-```jsx
-import { useState, useEffect } from 'react';
-
-function useAPI(endpoint) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch(`http://localhost:8000/api${endpoint}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.success) {
-          setData(json.data);
-        } else {
-          setError(json.message);
-        }
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [endpoint]);
-
-  return { data, loading, error };
-}
-
-// Usage in component
-function DosenList() {
-  const { data, loading, error } = useAPI('/dosen');
-  
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  
-  return (
-    <div>
-      {data.map(dosen => (
-        <div key={dosen.id}>{dosen.nama}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-### Next.js Example
-```javascript
-// app/dosen/page.js
-export default async function DosenPage() {
-  const res = await fetch('http://localhost:8000/api/dosen');
-  const json = await res.json();
-  const dosen = json.data;
-
-  return (
-    <div>
-      {dosen.map(d => (
-        <div key={d.id}>
-          <h3>{d.nama}</h3>
-          <p>{d.jabatan}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
----
-
-## Testing APIs
-
-### Quick Test All Endpoints
+**cURL Test:**
 ```bash
-# Save this as test-api.sh
-#!/bin/bash
-
-BASE_URL="http://localhost:8000/api"
-
-echo "Testing Core Endpoints..."
-curl -s $BASE_URL/dosen | jq '.success'
-curl -s $BASE_URL/mahasiswa | jq '.success'
-curl -s $BASE_URL/alumni | jq '.success'
-curl -s $BASE_URL/berita | jq '.success'
-curl -s $BASE_URL/pengumuman | jq '.success'
-curl -s $BASE_URL/agenda | jq '.success'
-curl -s $BASE_URL/galeri | jq '.success'
-curl -s $BASE_URL/penelitian | jq '.success'
-curl -s $BASE_URL/pkm | jq '.success'
-curl -s $BASE_URL/kisah-sukses | jq '.success'
-curl -s $BASE_URL/tracer-study | jq '.success'
-curl -s $BASE_URL/prestasi | jq '.success'
-curl -s $BASE_URL/project | jq '.success'
-curl -s $BASE_URL/matakuliah | jq '.success'
-curl -s $BASE_URL/profil-prodi | jq '.success'
-curl -s $BASE_URL/peraturan | jq '.success'
-
-echo "Testing Statistics..."
-curl -s $BASE_URL/penelitian-statistics | jq '.success'
-curl -s $BASE_URL/pkm-statistics | jq '.success'
-curl -s $BASE_URL/kisah-sukses-statistics | jq '.success'
-curl -s $BASE_URL/tracer-study-statistics | jq '.success'
-curl -s $BASE_URL/alumni-statistics | jq '.success'
-curl -s $BASE_URL/prestasi/statistics | jq '.success'
-
-echo "Testing Filters..."
-curl -s "$BASE_URL/penelitian-dosen/1" | jq '.success'
-curl -s "$BASE_URL/pkm-dosen/1" | jq '.success'
-curl -s "$BASE_URL/pkm-mahasiswa/1" | jq '.success'
-curl -s "$BASE_URL/kisah-sukses-featured" | jq '.success'
-curl -s "$BASE_URL/tracer-study-testimonials" | jq '.success'
-curl -s "$BASE_URL/galeri-kategori/akademik" | jq '.success'
-curl -s "$BASE_URL/peraturan-kategori/Akademik" | jq '.success'
-curl -s "$BASE_URL/agenda?upcoming=true" | jq '.success'
-
-echo "Done!"
+curl -X GET "http://127.0.0.1:8000/api/berita?per_page=5"
 ```
 
-### Test Individual Endpoint
-```bash
-# Test with pretty JSON
-curl http://localhost:8000/api/dosen | jq
-
-# Test single record
-curl http://localhost:8000/api/dosen/1 | jq
-
-# Test with filters
-curl "http://localhost:8000/api/mahasiswa?status=Aktif" | jq
-
-# Test statistics
-curl http://localhost:8000/api/penelitian-statistics | jq
-
-# Check response time
-curl -w "\nTime: %{time_total}s\n" http://localhost:8000/api/berita
-
-# Check only success field
-curl -s http://localhost:8000/api/dosen | jq '.success'
-```
-
----
-
-## Common Errors & Solutions
-
-### Error: CORS Policy
-**Problem:** `Access to fetch... has been blocked by CORS policy`
-
-**Solution:** Add your frontend URL to `config/cors.php`:
-```php
-'allowed_origins' => [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'https://your-domain.com'
-],
-```
-
-### Error: 500 Internal Server Error
-**Problem:** Server error on specific endpoint
-
-**Solution:** 
-1. Check Laravel logs: `storage/logs/laravel.log`
-2. Test with curl: `curl -v http://localhost:8000/api/endpoint`
-3. Check database connection
-
-### Error: 404 Not Found
-**Problem:** Endpoint doesn't exist
-
-**Solution:**
-1. Verify route: `php artisan route:list | grep api`
-2. Check spelling (case-sensitive)
-3. Ensure Laravel server is running
-
-### Error: Empty Response
-**Problem:** `data` is empty array
-
-**Solution:**
-1. Check database has data: `php artisan tinker` → `Model::count()`
-2. Check filters in query params
-3. For paginated responses, check `per_page` and `total`
-
----
-
-## Important Schema Notes
-
-### ⚠️ Field Names to Remember
-
-**Penelitian:**
-- Use `judul_penelitian` (NOT `judul`)
-- Use `dana` (NOT `jumlah_dana`)
-- Use `ketua_peneliti_id` (NOT `dosen_id`)
-
-**PKM:**
-- Use `dana` (NOT `biaya`)
-- Direct `dosen`/`mahasiswa` tables (NOT `tbl_dosen`/`tbl_mahasiswa`)
-
-**Kisah Sukses:**
-- Direct `mahasiswa` (NOT `alumni.mahasiswa`)
-- Field `kisah` is REQUIRED (must not be empty)
-- Field `pencapaian` is REQUIRED 
-- Field `tahun_pencapaian` is REQUIRED
-- Use `foto` (NOT `foto_utama` or `galeri_foto`)
-- No `kategori`, `is_featured`, `views`, `tags`, `video_url`, `quote` fields
-
-**Tracer Study:**
-- 16 basic fields only (not 25+)
-- Single `gaji` (NOT `gaji_pertama`/`gaji_sekarang`)
-- Single `kepuasan_prodi` (NOT multiple `kepuasan_*` fields)
-- Single `kompetensi_didapat` text (NOT multiple `kompetensi_*` fields)
-- Field `posisi` (NOT `posisi_pekerjaan`)
-- Direct `mahasiswa` (NOT through `alumni`)
-- No `status_survey`, `tanggal_survey`, `bulan_sejak_lulus` fields
-
----
-
-## Response Format
-
-### Success Response
-```json
-{
-  "success": true,
-  "data": [...] // or {} for single record
-}
-```
-
-### Paginated Response
+**Response:**
 ```json
 {
   "success": true,
   "data": {
+    "data": [
+      {
+        "id": 1,
+        "judul": "Judul Berita",
+        "isi": "Konten berita...",
+        "gambar": "berita/image.jpg",
+        "gambar_url": "http://127.0.0.1:8000/storage/berita/image.jpg",
+        "penulis": "Admin",
+        "tanggal": "2025-11-19",
+        "is_prestasi": 0
+      }
+    ],
     "current_page": 1,
-    "data": [...],
-    "per_page": 10,
-    "total": 50,
-    "last_page": 5
+    "per_page": 5,
+    "total": 50
   }
 }
 ```
 
-### Error Response
+### GET /api/berita/{id}
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/berita/1"
+```
+
+---
+
+## 📚 Kurikulum (Curriculum)
+
+### GET /api/kurikulum
+List mata kuliah (8 fields only)
+
+**Database Fields:**
+- `id`, `kode_matkul`, `nama_matkul`, `semester`, `sks`, `deskripsi`, `created_at`, `updated_at`
+
+**Query Parameters:**
+- `semester` (int) - Filter 1-8
+- `search` (string) - Cari kode/nama matkul
+- `sort_by` (string) - Default: semester
+- `sort_order` (string) - asc/desc
+- `per_page` (int) - Default: 50
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kurikulum?semester=3&per_page=10"
+```
+
+**Response:**
 ```json
 {
-  "success": false,
-  "message": "Error description"
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "kode_matkul": "TIF301",
+        "nama_matkul": "Pemrograman Web",
+        "semester": 3,
+        "sks": 3,
+        "deskripsi": "Mata kuliah pemrograman web...",
+        "created_at": "2025-11-19T10:00:00.000000Z",
+        "updated_at": "2025-11-19T10:00:00.000000Z"
+      }
+    ]
+  },
+  "message": "Data kurikulum berhasil diambil"
+}
+```
+
+### GET /api/kurikulum-semester/{semester}
+Get mata kuliah per semester
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kurikulum-semester/3"
+```
+
+### GET /api/kurikulum-statistics
+Statistik kurikulum per semester
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kurikulum-statistics"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "total_matkul": 40,
+    "total_sks": 144,
+    "by_semester": [
+      {"semester": 1, "total_matkul": 8, "total_sks": 20},
+      {"semester": 2, "total_matkul": 7, "total_sks": 18}
+    ]
+  }
+}
+```
+
+### POST /api/kurikulum
+Create mata kuliah
+
+**Request Body:**
+```json
+{
+  "kode_matkul": "TIF301",
+  "nama_matkul": "Pemrograman Web",
+  "semester": 3,
+  "sks": 3,
+  "deskripsi": "Mata kuliah yang membahas..."
+}
+```
+
+**cURL Test:**
+```bash
+curl -X POST "http://127.0.0.1:8000/api/kurikulum" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kode_matkul": "TIF301",
+    "nama_matkul": "Pemrograman Web",
+    "semester": 3,
+    "sks": 3,
+    "deskripsi": "Mata kuliah pemrograman web"
+  }'
+```
+
+### PUT /api/kurikulum/{id}
+Update mata kuliah
+
+**cURL Test:**
+```bash
+curl -X PUT "http://127.0.0.1:8000/api/kurikulum/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kode_matkul": "TIF301",
+    "nama_matkul": "Pemrograman Web Lanjut",
+    "semester": 3,
+    "sks": 3,
+    "deskripsi": "Updated description"
+  }'
+```
+
+### DELETE /api/kurikulum/{id}
+Delete mata kuliah
+
+**cURL Test:**
+```bash
+curl -X DELETE "http://127.0.0.1:8000/api/kurikulum/1"
+```
+
+**⚠️ Important:** NO `cover_foto` field in database
+
+---
+
+## 🎓 Tracer Study
+
+### GET /api/tracer-study
+Data lengkap tracer study alumni dengan filter
+
+**Database Fields (13 only):**
+- `nim`, `tahun_survey`, `status_pekerjaan`, `nama_perusahaan`, `posisi`, `bidang_pekerjaan`, `gaji`, `waktu_tunggu_kerja`, `kesesuaian_bidang_studi`, `kepuasan_prodi`, `saran_prodi`, `kompetensi_didapat`, `saran_pengembangan`
+
+**Query Parameters:**
+- `tahun_survey` (int) - Filter tahun
+- `status_pekerjaan` (string) - "Bekerja Full Time", "Bekerja Part Time", "Wiraswasta", "Melanjutkan Studi", "Belum Bekerja", "Freelancer"
+- `kesesuaian_bidang_studi` (string) - "Sangat Sesuai", "Sesuai", "Cukup Sesuai", "Kurang Sesuai", "Tidak Sesuai"
+- `waktu_tunggu_min` (int) - Bulan minimum
+- `waktu_tunggu_max` (int) - Bulan maksimum
+- `gaji_min` (decimal)
+- `gaji_max` (decimal)
+- `search` (string) - Cari nama/perusahaan/posisi
+- `per_page` (int) - Default: 15
+
+**cURL Test:**
+```bash
+# Get all
+curl -X GET "http://127.0.0.1:8000/api/tracer-study"
+
+# Filter by kesesuaian & gaji
+curl -X GET "http://127.0.0.1:8000/api/tracer-study?kesesuaian_bidang_studi=Sangat%20Sesuai&gaji_min=5000000"
+
+# Search
+curl -X GET "http://127.0.0.1:8000/api/tracer-study?search=Software"
+
+# Complex filter
+curl -X GET "http://127.0.0.1:8000/api/tracer-study?status_pekerjaan=Bekerja%20Full%20Time&waktu_tunggu_max=6&gaji_min=5000000&per_page=20"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "nim": "20200001",
+        "alumni": {
+          "nim": "20200001",
+          "nama": "John Doe",
+          "email": "john@email.com",
+          "prodi": "Teknik Informatika",
+          "tahun_lulus": 2024,
+          "foto": "mahasiswa/foto.jpg",
+          "foto_url": "http://127.0.0.1:8000/storage/mahasiswa/foto.jpg"
+        },
+        "tahun_survey": 2025,
+        "status_pekerjaan": "Bekerja Full Time",
+        "nama_perusahaan": "PT Tech Indonesia",
+        "posisi": "Software Engineer",
+        "bidang_pekerjaan": "IT & Software",
+        "gaji": 8000000,
+        "waktu_tunggu_kerja": 3,
+        "kesesuaian_bidang_studi": "Sangat Sesuai",
+        "kepuasan_prodi": 5,
+        "saran_prodi": "Perbanyak praktikum...",
+        "kompetensi_didapat": "Programming, Problem Solving",
+        "saran_pengembangan": "Update teknologi AI/ML"
+      }
+    ],
+    "current_page": 1,
+    "total": 100
+  }
+}
+```
+
+### GET /api/tracer-study/{id}
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/tracer-study/1"
+```
+
+### GET /api/tracer-study-statistics
+Statistik lengkap tracer study
+
+**Query Parameters:**
+- `tahun_survey` (int) - Optional, default: latest year
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/tracer-study-statistics?tahun_survey=2025"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "total_respondents": 150,
+    "status_pekerjaan": {
+      "Bekerja Full Time": 80,
+      "Bekerja Part Time": 15,
+      "Wiraswasta": 10
+    },
+    "waktu_tunggu_kerja_distribution": {
+      "0-3_bulan": 60,
+      "4-6_bulan": 40,
+      "7-12_bulan": 25,
+      "lebih_12_bulan": 10
+    },
+    "kesesuaian_bidang_studi": {
+      "Sangat Sesuai": 50,
+      "Sesuai": 60
+    },
+    "avg_gaji": 7500000.50,
+    "avg_kepuasan_prodi": 4.2,
+    "avg_waktu_tunggu_kerja": 4.5,
+    "employment_rate": 90.67,
+    "top_companies": [
+      {"nama_perusahaan": "PT Tech", "total": 15}
+    ]
+  },
+  "tahun_survey": 2025
+}
+```
+
+### GET /api/tracer-study-testimonials
+Testimoni alumni
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/tracer-study-testimonials?per_page=5"
+```
+
+### POST /api/tracer-study
+Create tracer study entry
+
+**Request Body:**
+```json
+{
+  "nim": "20200001",
+  "tahun_survey": 2025,
+  "status_pekerjaan": "Bekerja Full Time",
+  "nama_perusahaan": "PT Tech Indonesia",
+  "posisi": "Software Engineer",
+  "bidang_pekerjaan": "IT & Software",
+  "gaji": 8000000,
+  "waktu_tunggu_kerja": 3,
+  "kesesuaian_bidang_studi": "Sangat Sesuai",
+  "kepuasan_prodi": 5,
+  "saran_prodi": "Perbanyak praktikum",
+  "kompetensi_didapat": "Programming, Problem Solving",
+  "saran_pengembangan": "Update AI/ML"
+}
+```
+
+**cURL Test:**
+```bash
+curl -X POST "http://127.0.0.1:8000/api/tracer-study" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nim": "20200001",
+    "tahun_survey": 2025,
+    "status_pekerjaan": "Bekerja Full Time",
+    "nama_perusahaan": "PT Tech",
+    "posisi": "Software Engineer",
+    "gaji": 8000000,
+    "waktu_tunggu_kerja": 3
+  }'
+```
+
+**⚠️ Important Field Changes:**
+- Use `posisi` (NOT `posisi_pekerjaan`)
+- Single `gaji` field (NOT `gaji_pertama`/`gaji_sekarang`)
+- Use `waktu_tunggu_kerja` as integer months (NOT `bulan_sejak_lulus`)
+- Single `kepuasan_prodi` 1-5 (NOT multiple `kepuasan_*` fields)
+- Direct `mahasiswa` relationship via `nim` (NOT through `alumni_id`)
+
+---
+
+## 💼 Project Mahasiswa
+
+### GET /api/project
+List project mahasiswa
+
+**Query Parameters:**
+- `search` (string) - Judul/deskripsi/nama
+- `tahun` (int)
+- `kategori` (string)
+- `status` (string)
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/project?kategori=Web%20Development"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "nim": "20200001",
+      "mahasiswa": {
+        "nim": "20200001",
+        "nama": "John Doe",
+        "email": "john@email.com",
+        "kelas": "TI-3A"
+      },
+      "judul_project": "Sistem Informasi Kampus",
+      "deskripsi": "Project web-based...",
+      "tahun": 2024,
+      "kategori": "Web Development",
+      "teknologi": "Laravel, Vue.js",
+      "cover_image": "projects/cover.jpg",
+      "cover_image_url": "http://127.0.0.1:8000/storage/projects/cover.jpg",
+      "galeri": ["projects/img1.jpg"],
+      "galeri_urls": ["http://127.0.0.1:8000/storage/projects/img1.jpg"]
+    }
+  ]
+}
+```
+
+### GET /api/project/{id}
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/project/1"
+```
+
+---
+
+## 🏆 Kisah Sukses (Success Stories)
+
+### GET /api/kisah-sukses
+List kisah sukses alumni
+
+**Database Fields (8 only):**
+- `nim`, `judul`, `kisah`, `pencapaian`, `tahun_pencapaian`, `foto`, `status`, `timestamps`
+
+**Query Parameters:**
+- `status` (string) - "Published"/"Draft"
+- `search` (string)
+- `per_page` (int) - Default: 10
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kisah-sukses?status=Published"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "nim": "20200001",
+        "mahasiswa": {
+          "nim": "20200001",
+          "nama": "John Doe",
+          "foto": "mahasiswa/foto.jpg",
+          "foto_url": "http://127.0.0.1:8000/storage/mahasiswa/foto.jpg"
+        },
+        "judul": "Dari Mahasiswa Menjadi CTO",
+        "kisah": "Perjalanan karir saya dimulai...",
+        "pencapaian": "CTO at PT Tech",
+        "tahun_pencapaian": 2024,
+        "foto": "kisah-sukses/foto.jpg",
+        "foto_url": "http://127.0.0.1:8000/storage/kisah-sukses/foto.jpg",
+        "status": "Published"
+      }
+    ]
+  }
+}
+```
+
+### GET /api/kisah-sukses/{id}
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kisah-sukses/1"
+```
+
+### GET /api/kisah-sukses-statistics
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/kisah-sukses-statistics"
+```
+
+### POST /api/kisah-sukses
+Create kisah sukses
+
+**Request Body (multipart/form-data):**
+```
+nim: 20200001
+judul: Dari Mahasiswa ke CTO
+kisah: Full story text...
+pencapaian: CTO at PT Tech
+tahun_pencapaian: 2024
+foto: [file upload]
+status: Published
+```
+
+**cURL Test:**
+```bash
+curl -X POST "http://127.0.0.1:8000/api/kisah-sukses" \
+  -F "nim=20200001" \
+  -F "judul=Success Story Title" \
+  -F "kisah=Full story text here..." \
+  -F "pencapaian=CEO at Startup" \
+  -F "tahun_pencapaian=2024" \
+  -F "foto=@/path/to/photo.jpg" \
+  -F "status=Published"
+```
+
+**⚠️ Important:** 
+- Fields `kisah`, `pencapaian`, `tahun_pencapaian` are REQUIRED
+- Use `foto` field (NOT `foto_utama` or `galeri_foto`)
+- Direct `mahasiswa` relationship (NOT through `alumni`)
+
+---
+
+## 🔬 Penelitian (Research)
+
+### GET /api/penelitian
+**Query Parameters:**
+- `jenis_penelitian` (string)
+- `status` (string) - "Draft", "Sedang Berjalan", "Selesai"
+- `search` (string)
+- `per_page` (int) - Default: 10
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/penelitian?status=Selesai"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "judul_penelitian": "AI dalam Pendidikan",
+        "ketuaPeneliti": {
+          "nama": "Dr. Jane Smith",
+          "nidn": "123456"
+        },
+        "jenis_penelitian": "Penelitian Dasar",
+        "tahun_mulai": "2024",
+        "tahun_selesai": "2025",
+        "dana": 50000000,
+        "status": "Selesai"
+      }
+    ]
+  }
+}
+```
+
+### GET /api/penelitian-statistics
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/penelitian-statistics"
+```
+
+---
+
+## 📝 PKM (Student Program)
+
+### GET /api/pkm
+**Query Parameters:**
+- `jenis_pkm` (string)
+- `status` (string)
+- `search` (string)
+- `per_page` (int) - Default: 10
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/pkm"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "judul_pkm": "Aplikasi Pembelajaran",
+        "deskripsi": "Deskripsi PKM...",
+        "jenis_pkm": "PKM-KC",
+        "dosenPembimbing": {
+          "nama": "Dr. John",
+          "nidn": "123456"
+        },
+        "mahasiswas": [
+          {
+            "nim": "20200001",
+            "nama": "Jane Doe",
+            "peran": "Ketua"
+          }
+        ],
+        "dana": 12500000,
+        "status": "Selesai"
+      }
+    ]
+  }
+}
+```
+
+### GET /api/pkm-statistics
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/pkm-statistics"
+```
+
+---
+
+## 🎓 Alumni
+
+### GET /api/alumni
+**Query Parameters:**
+- `tahun_lulus` (int)
+- `prodi` (string)
+- `search` (string)
+- `per_page` (int) - Default: 15
+
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/alumni?tahun_lulus=2024"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "nim": "20200001",
+        "mahasiswa": {
+          "nim": "20200001",
+          "nama": "John Doe",
+          "email": "john@email.com",
+          "prodi": "Teknik Informatika",
+          "foto": "mahasiswa/foto.jpg",
+          "foto_url": "http://127.0.0.1:8000/storage/mahasiswa/foto.jpg"
+        },
+        "tahun_lulus": 2024,
+        "ipk": 3.75
+      }
+    ]
+  }
+}
+```
+
+### GET /api/alumni-statistics
+**cURL Test:**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/alumni-statistics"
+```
+
+---
+
+## 🎯 Field Changes Summary
+
+| Module | Removed Fields | Actual DB Fields |
+|--------|---------------|------------------|
+| **TracerStudy** | alumni_id, bulan_sejak_lulus, posisi_pekerjaan, gaji_pertama/sekarang, kompetensi_*, kepuasan_*, status_survey, tanggal_survey | nim, posisi, gaji, waktu_tunggu_kerja, kepuasan_prodi (1-5) |
+| **KisahSukses** | kategori, quote, foto_utama, galeri_foto, video_url, tags, is_featured, views | judul, kisah (required), pencapaian (required), tahun_pencapaian (required), foto, status |
+| **Kurikulum** | cover_foto | 8 fields only: kode_matkul, nama_matkul, semester, sks, deskripsi, timestamps |
+
+---
+
+## 🔧 JavaScript Integration
+
+### Basic Fetch
+```javascript
+const API_URL = 'http://127.0.0.1:8000/api';
+
+async function fetchAPI(endpoint) {
+  const response = await fetch(`${API_URL}${endpoint}`);
+  const json = await response.json();
+  return json.success ? json.data : null;
+}
+
+// Usage
+const tracerStudy = await fetchAPI('/tracer-study?gaji_min=5000000');
+const kurikulum = await fetchAPI('/kurikulum?semester=3');
+```
+
+### React Hook
+```jsx
+function useAPI(endpoint) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api${endpoint}`)
+      .then(res => res.json())
+      .then(json => setData(json.data))
+      .finally(() => setLoading(false));
+  }, [endpoint]);
+
+  return { data, loading };
 }
 ```
 
 ---
 
-## Quick Start Checklist
+## 📌 Testing All Endpoints
 
-Before integrating to frontend:
+### Quick Test Script
+```bash
+#!/bin/bash
+BASE="http://127.0.0.1:8000/api"
 
-- [ ] Laravel server running: `php artisan serve --port=8000`
-- [ ] Test base endpoint: `curl http://localhost:8000/api/dosen`
-- [ ] All responses return `{"success": true}`
-- [ ] CORS configured for your frontend URL
-- [ ] Database seeded with test data
-- [ ] Frontend can reach API (no network errors)
+echo "Testing APIs..."
+curl -s $BASE/berita | jq '.success'
+curl -s $BASE/kurikulum | jq '.success'
+curl -s $BASE/tracer-study | jq '.success'
+curl -s $BASE/project | jq '.success'
+curl -s $BASE/kisah-sukses | jq '.success'
+curl -s $BASE/penelitian | jq '.success'
+curl -s $BASE/pkm | jq '.success'
+curl -s $BASE/alumni | jq '.success'
+
+echo "Testing Statistics..."
+curl -s $BASE/tracer-study-statistics | jq '.success'
+curl -s $BASE/kurikulum-statistics | jq '.success'
+curl -s $BASE/kisah-sukses-statistics | jq '.success'
+```
 
 ---
 
-**Last Updated:** November 13, 2025
+## ✅ Checklist
 
-**For detailed field descriptions, see:** `API_DOCUMENTATION.md`
+Before integration:
+- [ ] Laravel server running: `php artisan serve`
+- [ ] Test endpoints: All return `{"success": true}`
+- [ ] CORS configured for frontend URL
+- [ ] Database has test data
+- [ ] Image URLs return full paths
+
+---
+
+**Last Updated:** November 2025  
+**Laravel Version:** 12.x  
+**Database:** MySQL (db_mytpl)
