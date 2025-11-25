@@ -74,14 +74,6 @@
                 </a>
             </li>
 
-            <!-- Nav Item - Galeri -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('galeri.index') }}">
-                    <i class="fas fa-fw fa-images"></i>
-                    <span>Galeri Kegiatan</span>
-                </a>
-            </li>
-
             <!-- Nav Item - Penelitian -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('penelitian.index') }}">

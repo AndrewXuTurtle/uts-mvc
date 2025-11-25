@@ -116,24 +116,19 @@
                                 </a>
                                 
                                 @if($tab === 'eligible' && $mhs->status === 'Aktif')
-                                    <form action="{{ route('mahasiswa.convert-to-alumni', $mhs) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('Konversi mahasiswa {{ $mhs->nama }} menjadi alumni?')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success btn-sm" title="Konversi ke Alumni">
-                                            <i class="fas fa-graduation-cap"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-success btn-circle btn-sm" 
+                                            onclick="confirmConvert('{{ route('mahasiswa.convert-to-alumni', $mhs) }}', '{{ $mhs->nama }}')"
+                                            title="Konversi ke Alumni">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </button>
                                 @endif
 
                                 @if($tab === 'aktif')
-                                    <form action="{{ route('mahasiswa.destroy', $mhs) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus data mahasiswa ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-danger btn-circle btn-sm" 
+                                            onclick="confirmDelete('{{ route('mahasiswa.destroy', $mhs) }}', 'mahasiswa {{ $mhs->nama }}')"
+                                            title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 @endif
                             </td>
                         </tr>
@@ -159,3 +154,44 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Convert to Alumni Confirmation
+    function confirmConvert(url, nama) {
+        Swal.fire({
+            title: 'Konfirmasi Konversi',
+            html: `Konversi mahasiswa <strong>${nama}</strong> menjadi alumni?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1cc88a',
+            cancelButtonColor: '#858796',
+            confirmButtonText: '<i class="fas fa-graduation-cap"></i> Ya, Konversi!',
+            cancelButtonText: '<i class="fas fa-times"></i> Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Mohon tunggu sebentar',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                
+                const csrfField = document.createElement('input');
+                csrfField.type = 'hidden';
+                csrfField.name = '_token';
+                csrfField.value = document.querySelector('meta[name="csrf-token"]').content;
+                
+                form.appendChild(csrfField);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+</script>
+@endpush

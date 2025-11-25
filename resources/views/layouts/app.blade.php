@@ -150,10 +150,14 @@
 
         .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white !important;
             border-radius: 1rem 1rem 0 0 !important;
             border: none;
             font-weight: 600;
+        }
+        
+        .card-header * {
+            color: white !important;
         }
 
         /* Stats Cards */
@@ -312,19 +316,56 @@
 
         /* Fix Action Button Size - Make them smaller and cleaner */
         .btn-circle {
-            width: 30px !important;
-            height: 30px !important;
+            width: 32px !important;
+            height: 32px !important;
             padding: 0 !important;
             border-radius: 50% !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             font-size: 0.75rem !important;
+            transition: all 0.3s ease !important;
+            margin: 0 2px !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        }
+
+        .btn-circle:hover {
+            transform: translateY(-3px) scale(1.1) !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
         }
 
         .btn-circle i {
             font-size: 0.75rem !important;
+            margin: 0 !important;
         }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            white-space: nowrap;
+        }
+
+        /* Table Enhancements */
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e3e6f0;
+            background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
 
         /* Alternative: Square action buttons (cleaner look) */
         .btn-action {
@@ -349,6 +390,9 @@
             vertical-align: middle;
         }
     </style>
+    
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     
     @stack('styles')
 </head>
@@ -434,6 +478,136 @@
     <script src="{{asset('template/vendor/datatables/jquery.dataTables.min.js')}}"></script>
     <script src="{{asset('template/vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
     <script src="{{asset('template/js/demo/datatables-demo.js')}}"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Global Delete Confirmation Script -->
+    <script>
+        // Modern Delete Confirmation with SweetAlert2
+        function confirmDelete(url, itemName = 'data ini') {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus ${itemName}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: '<i class="fas fa-trash"></i> Ya, Hapus!',
+                cancelButtonText: '<i class="fas fa-times"></i> Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'animated-popup',
+                    confirmButton: 'btn-lg',
+                    cancelButton: 'btn-lg'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp animate__faster'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Menghapus...',
+                        text: 'Mohon tunggu sebentar',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Submit delete form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    
+                    const csrfField = document.createElement('input');
+                    csrfField.type = 'hidden';
+                    csrfField.name = '_token';
+                    csrfField.value = document.querySelector('meta[name="csrf-token"]').content;
+                    
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    
+                    form.appendChild(csrfField);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Success Message (if redirected with success)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                timer: 3000,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true,
+                customClass: {
+                    popup: 'colored-toast'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInRight'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutRight'
+                }
+            });
+        @endif
+
+        // Error Message (if redirected with error)
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#e74a3b'
+            });
+        @endif
+    </script>
+    
+    <style>
+        /* SweetAlert2 Custom Styling */
+        .animated-popup {
+            border-radius: 1rem !important;
+            font-family: 'Nunito', sans-serif !important;
+        }
+        
+        .swal2-title {
+            font-weight: 700 !important;
+            color: #5a5c69 !important;
+        }
+        
+        .swal2-html-container {
+            color: #858796 !important;
+        }
+        
+        .colored-toast.swal2-icon-success {
+            background-color: #1cc88a !important;
+            color: white !important;
+        }
+        
+        .colored-toast .swal2-title {
+            color: white !important;
+            font-size: 1rem !important;
+        }
+        
+        .colored-toast .swal2-html-container {
+            color: white !important;
+            font-size: 0.875rem !important;
+        }
+    </style>
+    
     @stack('scripts')
 
 </body>

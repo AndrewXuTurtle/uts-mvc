@@ -103,7 +103,7 @@
                                         <i class="fas fa-edit" style="font-size: 12px;"></i>
                                     </a>
                                     <button type="button" class="btn btn-danger btn-circle btn-sm" title="Hapus"
-                                            onclick='confirmDelete({{ $mk->mk_id }})'>
+                                            onclick='confirmDelete("{{ route('matakuliah.destroy', $mk->mk_id) }}", "matakuliah {{ $mk->nama_mk }}")'>
                                         <i class="fas fa-trash" style="font-size: 12px;"></i>
                                     </button>
                                 </div>
@@ -126,41 +126,10 @@
         </div>
     </div>
 </div>
-
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus data mata kuliah ini?</p>
-            </div>
-            <div class="modal-footer">
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
-function confirmDelete(id) {
-    const deleteForm = document.getElementById('deleteForm');
-    deleteForm.action = `{{ url('matakuliah') }}/${id}`;
-    $('#deleteModal').modal('show');
-}
-
 document.getElementById('searchInput').addEventListener('keyup', function(e) {
     if (e.key === 'Enter') {
         const url = new URL(window.location);

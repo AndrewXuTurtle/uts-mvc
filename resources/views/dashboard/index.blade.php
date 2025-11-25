@@ -351,23 +351,13 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-0">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-sm"><i class="fas fa-lightbulb text-warning"></i> PKM</span>
                             <span class="font-weight-bold">{{ DB::table('pkm')->count() }}</span>
                         </div>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar bg-gradient-warning" role="progressbar" style="width: 50%"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-0">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-sm"><i class="fas fa-images text-info"></i> Galeri</span>
-                            <span class="font-weight-bold">{{ DB::table('galeri')->count() }}</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-gradient-info" role="progressbar" style="width: 85%"></div>
                         </div>
                     </div>
                 </div>
@@ -483,14 +473,6 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-lg-2 col-md-4 col-6 mb-3">
-                            <a href="{{ route('galeri.index') }}" class="text-decoration-none">
-                                <div class="p-3 rounded hover-shadow">
-                                    <i class="fas fa-images fa-2x text-secondary mb-2"></i>
-                                    <div class="small font-weight-bold">Galeri</div>
-                                </div>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -506,7 +488,7 @@
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Dosen', 'Mahasiswa', 'Alumni', 'Project', 'Penelitian', 'PKM', 'Berita', 'Galeri'],
+            labels: ['Dosen', 'Mahasiswa', 'Alumni', 'Project', 'Penelitian', 'PKM', 'Berita'],
             datasets: [{
                 label: 'Total Data',
                 data: [
@@ -516,8 +498,7 @@
                     {{ DB::table('projects')->count() }},
                     {{ DB::table('penelitian')->count() }},
                     {{ DB::table('pkm')->count() }},
-                    {{ App\Models\Berita::count() }},
-                    {{ DB::table('galeri')->count() }}
+                    {{ App\Models\Berita::count() }}
                 ],
                 backgroundColor: [
                     'rgba(102, 126, 234, 0.8)',
@@ -526,8 +507,7 @@
                     'rgba(79, 172, 254, 0.8)',
                     'rgba(253, 126, 20, 0.8)',
                     'rgba(245, 87, 108, 0.8)',
-                    'rgba(56, 239, 125, 0.8)',
-                    'rgba(0, 242, 254, 0.8)'
+                    'rgba(56, 239, 125, 0.8)'
                 ],
                 borderColor: [
                     'rgba(102, 126, 234, 1)',
