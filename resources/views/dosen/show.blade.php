@@ -69,17 +69,60 @@
                         </tr>
                     </table>
 
+                    <h6 class="text-primary mt-4 mb-3"><i class="fas fa-globe"></i> Profil Akademik Online</h6>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%" class="bg-light">
+                                <i class="fas fa-graduation-cap text-danger"></i> Google Scholar
+                            </th>
+                            <td>
+                                @if($dosen->google_scholar_link)
+                                    <a href="{{ $dosen->google_scholar_link }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-external-link-alt"></i> Lihat Profil
+                                    </a>
+                                @else
+                                    <span class="text-muted">Belum diisi</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">
+                                <i class="fas fa-star text-warning"></i> SINTA
+                            </th>
+                            <td>
+                                @if($dosen->sinta_link)
+                                    <a href="{{ $dosen->sinta_link }}" target="_blank" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-external-link-alt"></i> Lihat Profil
+                                    </a>
+                                @else
+                                    <span class="text-muted">Belum diisi</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">
+                                <i class="fas fa-book text-info"></i> Scopus
+                            </th>
+                            <td>
+                                @if($dosen->scopus_link)
+                                    <a href="{{ $dosen->scopus_link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-external-link-alt"></i> Lihat Profil
+                                    </a>
+                                @else
+                                    <span class="text-muted">Belum diisi</span>
+                                @endif
+                            </td>
+                        </tr>
+                    </table>
+
                     <div class="mt-4 d-flex justify-content-end gap-2">
                         <a href="{{ route('dosen.edit', $dosen->id) }}" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <form action="{{ route('dosen.destroy', $dosen->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-danger" 
+                                onclick="confirmDelete('{{ route('dosen.destroy', $dosen->id) }}', 'dosen {{ $dosen->nama }}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
                 </div>
             </div>

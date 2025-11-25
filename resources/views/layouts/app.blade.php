@@ -389,6 +389,42 @@
         .table td {
             vertical-align: middle;
         }
+
+        /* Dropdown Menu Fixes */
+        .dropdown-menu {
+            background: white;
+            border: 1px solid #e3e6f0;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            padding: 0.5rem 0;
+        }
+
+        .dropdown-item {
+            color: #5a5c69 !important;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            transform: translateX(5px);
+        }
+
+        .dropdown-item:active {
+            background: var(--primary-gradient);
+            color: white !important;
+        }
+
+        .dropdown-toggle {
+            font-weight: 600;
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid #e3e6f0;
+            margin: 0.5rem 0;
+        }
     </style>
     
     <!-- SweetAlert2 CSS -->

@@ -112,6 +112,53 @@
                             @enderror
                         </div>
 
+                        <hr class="my-4">
+                        <h6 class="text-primary mb-3"><i class="fas fa-globe"></i> Profil Akademik Online</h6>
+
+                        <div class="form-group mb-3">
+                            <label for="google_scholar_link">
+                                <i class="fas fa-graduation-cap text-danger"></i> Google Scholar Link
+                            </label>
+                            <input type="url" class="form-control @error('google_scholar_link') is-invalid @enderror" 
+                                   id="google_scholar_link" name="google_scholar_link" 
+                                   value="{{ old('google_scholar_link') }}" 
+                                   placeholder="https://scholar.google.com/citations?user=...">
+                            <small class="form-text text-muted">Link profil Google Scholar (opsional)</small>
+                            @error('google_scholar_link')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="sinta_link">
+                                <i class="fas fa-star text-warning"></i> SINTA Link
+                            </label>
+                            <input type="url" class="form-control @error('sinta_link') is-invalid @enderror" 
+                                   id="sinta_link" name="sinta_link" 
+                                   value="{{ old('sinta_link') }}" 
+                                   placeholder="https://sinta.kemdikbud.go.id/authors/profile/...">
+                            <small class="form-text text-muted">Link profil SINTA (opsional)</small>
+                            @error('sinta_link')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="scopus_link">
+                                <i class="fas fa-book text-info"></i> Scopus Link
+                            </label>
+                            <input type="url" class="form-control @error('scopus_link') is-invalid @enderror" 
+                                   id="scopus_link" name="scopus_link" 
+                                   value="{{ old('scopus_link') }}" 
+                                   placeholder="https://www.scopus.com/authid/detail.uri?authorId=...">
+                            <small class="form-text text-muted">Link profil Scopus (opsional)</small>
+                            @error('scopus_link')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <hr class="my-4">
+
                         <div class="form-group mb-4">
                             <label for="foto">Foto</label>
                             <input type="file" class="form-control @error('foto') is-invalid @enderror" 
